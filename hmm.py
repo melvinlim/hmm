@@ -30,7 +30,7 @@ class HMM:
 		M=self.M
 		T=self.T
 		self.A=matrix(N,N,0.1)
-		self.B=matrix(N,M,0.1)
+		self.B=matrix(N,M,1.0/STATES)
 		randomizeMatrix(self.B)
 		tmp=1.0/N
 		self.pi=array(N,tmp)
@@ -40,6 +40,7 @@ class HMM:
 		self.psi=matrix(T,N)
 		self.xi=tensor(T,N,N)
 		self.gamma=matrix(T,N)
+		self.gain=array(T)
 	def info(self):
 		print 'pi =',
 		pprinta(self.pi)
@@ -47,10 +48,10 @@ class HMM:
 		pprint(self.A)
 		print 'B =',
 		pprint(self.B)
-#		print 'delta =',
-#		pprint(self.delta)
-#		print 'psi =',
-#		pprint(self.psi)
+		print 'delta =',
+		pprint(self.delta)
+		print 'psi =',
+		pprint(self.psi)
 	def forward(self,obs):
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
@@ -60,15 +61,21 @@ class HMM:
 				for i in xrange(self.N):
 					tmp+=self.alpha[t][i]*self.A[i][j]
 				self.alpha[t+1][j]=tmp*self.B[j][obs[t+1]]
+		for t in xrange(self.T):
+			if self.alpha[t][j]<0.0001:
+				self.alpha[t][j]=self.alpha[t][j]*1000
+				self.gain[t]=1000
+			else:
+				self.gain[t]=1
 	def backward(self,obs):
 		for i in xrange(self.N):
-			self.beta[self.T-1][i]=1
+			self.beta[self.T-1][i]=1*self.gain[self.T-1]
 		for t in xrange(self.T-1-1,-1,-1):
 			for i in xrange(self.N):
 				tmp=0
 				for j in xrange(self.N):
 					tmp+=self.A[i][j]*self.B[j][obs[t+1]]*self.beta[t+1][j]
-				self.beta[t][i]=tmp
+				self.beta[t][i]=tmp*self.gain[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B[i][obs[0]]
@@ -78,6 +85,8 @@ class HMM:
 				maxVal=0
 				maxArg=0
 				for i in xrange(self.N):
+					if self.delta[t-1][i]<0.01:
+						self.delta[t-1][i]*=100
 					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
 						maxVal=tmp

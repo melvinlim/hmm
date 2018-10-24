@@ -5,7 +5,7 @@ TESTS=5
 TRIALS=5
 STATES=5
 SYMBOLS=3
-OBSERVATIONS=40
+OBSERVATIONS=100
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l
