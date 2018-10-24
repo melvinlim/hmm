@@ -42,5 +42,7 @@ def main(argv):
 		print jars.draw()
 	model.forward([1,2,3,4])
 	model.backward([1,2,3,4])
+	model.viterbi([1,2,3,4])
+	model.update([1,2,3,4])
 if __name__=='__main__':
 	main(sys.argv)
