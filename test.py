@@ -1,8 +1,9 @@
 import random
 import sys
 import hmm
+TESTS=50
 TRIALS=5
-STATES=3
+STATES=5
 SYMBOLS=3
 OBSERVATIONS=40
 class Jar:
@@ -43,10 +44,11 @@ def main(argv):
 		obs.append(jars.draw())
 	print obs
 	model.info()
-	model.forward(obs)
-	model.backward(obs)
-	model.viterbi(obs)
-	model.update(obs)
-	model.info()
+	for t in xrange(TESTS):
+		model.forward(obs)
+		model.backward(obs)
+		model.viterbi(obs)
+		model.update(obs)
+		model.info()
 if __name__=='__main__':
 	main(sys.argv)

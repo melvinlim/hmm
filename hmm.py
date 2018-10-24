@@ -43,11 +43,11 @@ class HMM:
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
 		for t in xrange(self.T-1):
-			tmp=0
 			for j in xrange(self.N):
+				tmp=0
 				for i in xrange(self.N):
-					tmp+=self.alpha[t][i]*self.B[j][obs[t+1]]
-				self.alpha[t+1][j]=tmp
+					tmp+=self.alpha[t][i]*self.A[i][j]
+				self.alpha[t+1][j]=tmp*self.B[j][obs[t+1]]
 	def backward(self,obs):
 		for i in xrange(self.N):
 			self.beta[self.T-1][i]=1
