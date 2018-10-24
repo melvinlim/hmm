@@ -39,6 +39,8 @@ class HMM:
 		pprint(self.A)
 		print 'B =',
 		pprint(self.B)
+#		print 'psi =',
+#		pprint(self.psi)
 	def forward(self,obs):
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
@@ -62,14 +64,15 @@ class HMM:
 			self.delta[0][i]=self.pi[i]*self.B[i][obs[0]]
 			self.psi[0][i]=0
 		for t in xrange(1,self.T):
-			maxVal=0
-			maxArg=0
 			for j in xrange(self.N):
+				maxVal=0
+				maxArg=0
 				for i in xrange(self.N):
 					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
 						maxVal=tmp
 						maxArg=i
+#						print maxVal,maxArg
 				self.delta[t][j]=maxVal*self.B[j][obs[t]]
 				self.psi[t][j]=maxArg
 	def update(self,obs):
