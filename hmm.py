@@ -48,10 +48,10 @@ class HMM:
 		pprint(self.A)
 		print 'B =',
 		pprint(self.B)
-		print 'alpha =',
-		pprint(self.alpha)
-		print 'beta =',
-		pprint(self.beta)
+#		print 'alpha =',
+#		pprint(self.alpha)
+#		print 'beta =',
+#		pprint(self.beta)
 #		print 'delta =',
 #		pprint(self.delta)
 #		print 'psi =',
@@ -83,10 +83,10 @@ class HMM:
 		for t in xrange(self.T-1):
 			self.scalefactor[t+1]=0
 			for j in xrange(self.N):
-				tmp=0
+				sumalpha=0
 				for i in xrange(self.N):
-					tmp+=self.alpha[t][i]*self.A[i][j]
-				self.alpha[t+1][j]=tmp*self.B[j][obs[t+1]]
+					sumalpha+=self.alpha[t][i]*self.A[i][j]
+				self.alpha[t+1][j]=sumalpha*self.B[j][obs[t+1]]
 				self.scalefactor[t+1]+=self.alpha[t+1][j]
 			self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
 			for i in xrange(self.N):
@@ -99,7 +99,7 @@ class HMM:
 				tmp=0
 				for j in xrange(self.N):
 					tmp+=self.A[i][j]*self.B[j][obs[t+1]]*self.beta[t+1][j]
-				self.beta[t][i]=tmp
+				self.beta[t][i]=tmp*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B[i][obs[0]]
