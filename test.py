@@ -1,9 +1,10 @@
 import random
 import sys
+import hmm
 TRIALS=5
-STATES=11
-SYMBOLS=11
-OBSERVATIONS=4
+STATES=3
+SYMBOLS=3
+OBSERVATIONS=40
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l
@@ -32,17 +33,20 @@ class Jars:
 		index=random.randint(0,self.n-1)
 		return self.list[index].draw()
 def main(argv):
-	import hmm
 	model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
 	jars=Jars()
-	jars.put(Jar([1,1,2]))
-	jars.put(Jar([1,2,2]))
-	jars.put(Jar([2,2,2]))
-	for i in xrange(TRIALS):
-		print jars.draw()
-	model.forward([1,2,3,4])
-	model.backward([1,2,3,4])
-	model.viterbi([1,2,3,4])
-	model.update([1,2,3,4])
+	jars.put(Jar([0,1,1,2]))
+	jars.put(Jar([0,1,2,2]))
+	jars.put(Jar([0,2,2,2]))
+	obs=[]
+	for i in xrange(OBSERVATIONS):
+		obs.append(jars.draw())
+	print obs
+	model.info()
+	model.forward(obs)
+	model.backward(obs)
+	model.viterbi(obs)
+	model.update(obs)
+	model.info()
 if __name__=='__main__':
 	main(sys.argv)

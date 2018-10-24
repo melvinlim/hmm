@@ -1,3 +1,13 @@
+def pprinta(array):
+	for element in array:
+		print '\t%.3f'%element,
+	print
+def pprint(matrix):
+	for row in matrix:
+		for element in row:
+			print '\t%.3f'%element,
+		print
+	print
 def array(n,xi=0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0):
@@ -22,6 +32,13 @@ class HMM:
 		self.psi=matrix(T,N)
 		self.xi=tensor(T,N,N)
 		self.gamma=matrix(T,N)
+	def info(self):
+		print 'pi =',
+		pprinta(self.pi)
+		print 'A =',
+		pprint(self.A)
+		print 'B =',
+		pprint(self.B)
 	def forward(self,obs):
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
