@@ -41,5 +41,6 @@ def main(argv):
 	for i in xrange(TRIALS):
 		print jars.draw()
 	model.forward([1,2,3,4])
+	model.backward([1,2,3,4])
 if __name__=='__main__':
 	main(sys.argv)
