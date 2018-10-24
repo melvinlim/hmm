@@ -48,10 +48,26 @@ class HMM:
 		pprint(self.A)
 		print 'B =',
 		pprint(self.B)
-		print 'delta =',
-		pprint(self.delta)
-		print 'psi =',
-		pprint(self.psi)
+#		print 'delta =',
+#		pprint(self.delta)
+#		print 'psi =',
+#		pprint(self.psi)
+		T=self.T
+		tmp=self.delta[T-1][0]
+		maxArg=0
+		for i in xrange(1,self.N):
+			if self.delta[T-1][i]>tmp:
+				tmp=self.delta[T-1][i]
+				maxArg=i
+		t=T-1
+		record=[]
+		while t>=0:
+#			print maxArg,
+			record.append(maxArg)
+			maxArg=self.psi[t][maxArg]
+			t-=1
+		record.reverse()
+		print record
 	def forward(self,obs):
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
@@ -65,6 +81,7 @@ class HMM:
 			if self.alpha[t][j]<0.0001:
 				self.alpha[t][j]=self.alpha[t][j]*1000
 				self.gain[t]=1000
+				self.gain[t]=1
 			else:
 				self.gain[t]=1
 	def backward(self,obs):
