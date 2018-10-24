@@ -40,6 +40,7 @@ class HMM:
 		self.psi=matrix(T,N)
 		self.xi=tensor(T,N,N)
 		self.gamma=matrix(T,N)
+		self.scalefactor=array(T,0)
 	def info(self):
 		print 'pi =',
 		pprinta(self.pi)
@@ -47,6 +48,10 @@ class HMM:
 		pprint(self.A)
 		print 'B =',
 		pprint(self.B)
+		print 'alpha =',
+		pprint(self.alpha)
+		print 'beta =',
+		pprint(self.beta)
 #		print 'delta =',
 #		pprint(self.delta)
 #		print 'psi =',
@@ -68,14 +73,24 @@ class HMM:
 		record.reverse()
 		print record
 	def forward(self,obs):
+		tmp=0
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
+			tmp+=self.alpha[0][i]
+		self.scalefactor[0]=1.0/tmp
+		for i in xrange(self.N):
+			self.alpha[0][i]=self.alpha[0][i]*self.scalefactor[0]
 		for t in xrange(self.T-1):
+			self.scalefactor[t+1]=0
 			for j in xrange(self.N):
 				tmp=0
 				for i in xrange(self.N):
 					tmp+=self.alpha[t][i]*self.A[i][j]
 				self.alpha[t+1][j]=tmp*self.B[j][obs[t+1]]
+				self.scalefactor[t+1]+=self.alpha[t+1][j]
+			self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
+			for i in xrange(self.N):
+				self.alpha[t+1][i]=self.alpha[t+1][i]*self.scalefactor[t+1]
 	def backward(self,obs):
 		for i in xrange(self.N):
 			self.beta[self.T-1][i]=1
