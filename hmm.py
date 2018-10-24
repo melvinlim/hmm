@@ -40,7 +40,6 @@ class HMM:
 		self.psi=matrix(T,N)
 		self.xi=tensor(T,N,N)
 		self.gamma=matrix(T,N)
-		self.gain=array(T)
 	def info(self):
 		print 'pi =',
 		pprinta(self.pi)
@@ -77,22 +76,15 @@ class HMM:
 				for i in xrange(self.N):
 					tmp+=self.alpha[t][i]*self.A[i][j]
 				self.alpha[t+1][j]=tmp*self.B[j][obs[t+1]]
-		for t in xrange(self.T):
-			if self.alpha[t][j]<0.0001:
-				self.alpha[t][j]=self.alpha[t][j]*1000
-				self.gain[t]=1000
-				self.gain[t]=1
-			else:
-				self.gain[t]=1
 	def backward(self,obs):
 		for i in xrange(self.N):
-			self.beta[self.T-1][i]=1*self.gain[self.T-1]
+			self.beta[self.T-1][i]=1
 		for t in xrange(self.T-1-1,-1,-1):
 			for i in xrange(self.N):
 				tmp=0
 				for j in xrange(self.N):
 					tmp+=self.A[i][j]*self.B[j][obs[t+1]]*self.beta[t+1][j]
-				self.beta[t][i]=tmp*self.gain[t]
+				self.beta[t][i]=tmp
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B[i][obs[0]]
