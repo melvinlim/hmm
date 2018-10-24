@@ -1,6 +1,9 @@
 import random
 import sys
 TRIALS=5
+STATES=11
+SYMBOLS=11
+OBSERVATIONS=4
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l
@@ -29,11 +32,14 @@ class Jars:
 		index=random.randint(0,self.n-1)
 		return self.list[index].draw()
 def main(argv):
+	import hmm
+	model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
 	jars=Jars()
 	jars.put(Jar([1,1,2]))
 	jars.put(Jar([1,2,2]))
 	jars.put(Jar([2,2,2]))
 	for i in xrange(TRIALS):
 		print jars.draw()
+	model.forward([1,2,3,4])
 if __name__=='__main__':
 	main(sys.argv)
