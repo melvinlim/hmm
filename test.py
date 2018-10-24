@@ -1,7 +1,7 @@
 import random
 import sys
 import hmm
-TESTS=50
+TESTS=5
 TRIALS=5
 STATES=5
 SYMBOLS=3

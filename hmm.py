@@ -1,3 +1,4 @@
+import random
 def pprinta(array):
 	for element in array:
 		print '\t%.3f'%element,
@@ -14,6 +15,12 @@ def matrix(m,n,xi=0):
 	return [[xi for _ in xrange(n)] for _ in xrange(m)]
 def tensor(i,j,k,xi=0):
 	return [[[xi for _ in xrange(k)] for _ in xrange(j)] for _ in xrange(i)]
+def randomizeMatrix(mat):
+	M=len(mat)
+	N=len(mat[0])
+	for i in xrange(M):
+		for j in xrange(N):
+			mat[i][j]=random.randint(0,100)/100.0
 class HMM:
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
@@ -24,6 +31,7 @@ class HMM:
 		T=self.T
 		self.A=matrix(N,N,0.1)
 		self.B=matrix(N,M,0.1)
+		randomizeMatrix(self.B)
 		tmp=1.0/N
 		self.pi=array(N,tmp)
 		self.alpha=matrix(T,N)
@@ -39,6 +47,8 @@ class HMM:
 		pprint(self.A)
 		print 'B =',
 		pprint(self.B)
+#		print 'delta =',
+#		pprint(self.delta)
 #		print 'psi =',
 #		pprint(self.psi)
 	def forward(self,obs):
@@ -62,7 +72,7 @@ class HMM:
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B[i][obs[0]]
-			self.psi[0][i]=0
+			self.psi[0][i]=-1
 		for t in xrange(1,self.T):
 			for j in xrange(self.N):
 				maxVal=0
