@@ -2,6 +2,7 @@ import random
 import myprint
 NOSCALEFACTOR=False
 #NOSCALEFACTOR=True
+PREVENTDIVIDEBYZERO=True
 def array(n,xi=0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0):
@@ -56,6 +57,9 @@ class HMM:
 				#pSymb[j]+=self.B[i][j]
 				pSymb[j]+=self.B(i,j)
 		norm=sum(pSymb)
+		if PREVENTDIVIDEBYZERO:
+			if norm==0:
+				norm=1
 		for j in xrange(self.M):
 			pSymb[j]/=norm
 		print 'pSymb =',
@@ -100,7 +104,10 @@ class HMM:
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B(i,obs[0])
 			tmp+=self.alpha[0][i]
-		self.scalefactor[0]=1.0/tmp
+		if tmp>0.00000:
+			self.scalefactor[0]=1.0/tmp
+		else:
+			self.scalefactor[0]=1.0
 		if NOSCALEFACTOR:
 			self.scalefactor[0]=1.0
 		for i in xrange(self.N):
@@ -113,7 +120,10 @@ class HMM:
 					sumalpha+=self.alpha[t][i]*self.A[i][j]
 				self.alpha[t+1][j]=sumalpha*self.B(j,obs[t+1])
 				self.scalefactor[t+1]+=self.alpha[t+1][j]
-			self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
+			if self.scalefactor[t+1]>0.00000:
+				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
+			else:
+				self.scalefactor[t+1]=1.0
 			if NOSCALEFACTOR:
 				self.scalefactor[t+1]=1.0
 			for i in xrange(self.N):
@@ -165,6 +175,9 @@ class HMM:
 					tmp+=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 #			self.pObsGivenModel[t]=tmp
 			normalizer=tmp
+			if PREVENTDIVIDEBYZERO:
+				if normalizer==0:
+					normalizer=1
 			for i in xrange(N):
 				xij=0
 				tmp=0
@@ -182,6 +195,9 @@ class HMM:
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
 					sumGamma+=self.gamma[t][i]
+				if PREVENTDIVIDEBYZERO:
+					if sumGamma==0:
+						sumGamma=1
 				self.A[i][j]=sumXi/sumGamma
 		for j in xrange(N):
 			for k in xrange(M):
@@ -191,4 +207,7 @@ class HMM:
 					sumGamma+=self.gamma[t][j]
 					if obs[t]==k:
 						gammaObsSymbVk+=self.gamma[t][j]
+				if PREVENTDIVIDEBYZERO:
+					if sumGamma==0:
+						sumGamma=1
 				self.updateB(j,k,gammaObsSymbVk,sumGamma)

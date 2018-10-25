@@ -62,7 +62,7 @@ def main(argv):
 	for trial in xrange(TRIALS):
 		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
 		jars=Jars()
-		jars.put(Jar([0,0,0,0,0,0,0,0,0,1,1,0,0,0,2]))
+		jars.put(Jar([1,1,1,1,1,1,1,1,0,1,1,0,0,0,2]))
 		jars.put(Jar([0,1,1,1,1,0,2,2]))
 		jars.put(Jar([0,2,2,2,1,2]))
 		obs=[]
