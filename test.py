@@ -1,7 +1,7 @@
 import random
 import sys
 import hmm
-TESTS=500
+UPDATES=500
 TRIALS=5
 STATES=3
 SYMBOLS=3
@@ -36,19 +36,31 @@ class Jars:
 def main(argv):
 	model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
 	jars=Jars()
-	jars.put(Jar([0,0,0,0,1,1,2]))
-	jars.put(Jar([0,1,1,1,1,2,2]))
+	jars.put(Jar([0,0,0,0,0,1,1,2]))
+	jars.put(Jar([0,1,1,1,1,0,2,2]))
 	jars.put(Jar([0,2,2,2,1,2]))
 	obs=[]
 	for i in xrange(OBSERVATIONS):
 		obs.append(jars.draw())
 	#model.info()
-	for t in xrange(TESTS):
+	for t in xrange(UPDATES):
 		model.forward(obs)
 		model.backward(obs)
 		model.viterbi(obs)
 		model.update(obs)
 	model.info()
+	pSymb=[]
+	for i in xrange(SYMBOLS):
+		pSymb.append(0.0)
+	total=0
+	for o in obs:
+		pSymb[o]+=1.0
+		total+=1.0
+	for t in xrange(SYMBOLS):
+		pSymb[t]/=total
+	print 'actual pSymb',
+	print pSymb
+	print 'obs:',
 	print obs
 if __name__=='__main__':
 	main(sys.argv)

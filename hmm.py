@@ -56,6 +56,15 @@ class HMM:
 #		pprint(self.delta)
 #		print 'psi =',
 #		pprint(self.psi)
+		pSymb=array(self.M,0)
+		for j in xrange(self.M):
+			for i in xrange(self.N):
+				pSymb[j]+=self.B[i][j]
+		norm=sum(pSymb)
+		for j in xrange(self.M):
+			pSymb[j]/=norm
+		print 'pSymb =',
+		pprinta(pSymb)
 		T=self.T
 		tmp=self.delta[T-1][0]
 		maxArg=0
@@ -71,6 +80,7 @@ class HMM:
 			maxArg=self.psi[t][maxArg]
 			t-=1
 		record.reverse()
+		print 'sta:',
 		print record
 	def forward(self,obs):
 		tmp=0
