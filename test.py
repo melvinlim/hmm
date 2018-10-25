@@ -2,11 +2,12 @@ import random
 import sys
 import hmm
 import myprint
-UPDATES=500
+UPDATES=50
 TRIALS=5
 STATES=3
 SYMBOLS=3
-OBSERVATIONS=100
+OBSERVATIONS=50
+TESTOBS=10
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l
@@ -57,6 +58,24 @@ def main(argv):
 			model.backward(obs)
 			model.viterbi(obs)
 			model.update(obs)
+		correct=0
+		for t in xrange(TESTOBS):
+			print 'test iter:',t
+			(prediction,state)=model.predict()
+			o=jars.draw()
+			if o==prediction:
+				correct+=1
+			print 'state:',state
+			print 'predicted:',prediction
+			print 'drew:',o
+			obs.pop(0)
+			obs.append(o)
+			for t in xrange(UPDATES):
+				model.forward(obs)
+				model.backward(obs)
+				model.viterbi(obs)
+				model.update(obs)
+		print 'correct/testobs=',correct,TESTOBS
 		predicted=model.info()
 		predictions.append(predicted)
 		pSymb=[]
@@ -73,10 +92,10 @@ def main(argv):
 		probabilities.append(pSymb)
 		print 'obs:',
 		print obs
-	print 'pred:',
-	myprint.pprint(predictions)
-	print 'prob:',
-	myprint.pprint(probabilities)
+#	print 'pred:',
+#	myprint.pprint(predictions)
+#	print 'prob:',
+#	myprint.pprint(probabilities)
 	absError=0
 	for t in xrange(TRIALS):
 		for s in xrange(SYMBOLS):
