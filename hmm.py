@@ -2,7 +2,7 @@ import random
 import myprint
 import math
 NOSCALEFACTOR=False
-#NOSCALEFACTOR=True
+NOSCALEFACTOR=True
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
 _1DGAUSS=False
@@ -42,6 +42,7 @@ class HMM:
 		self.xi=tensor(T,N,N)
 		self.gamma=matrix(T,N)
 		self.scalefactor=array(T,0)
+		self.pObsGivenModel=array(T)
 	def info(self):
 		print 'pi =',
 		myprint.pprinta(self.pi)
@@ -230,11 +231,15 @@ class HMM:
 		T=self.T
 		for t in xrange(T-1):
 			tmp=0
+			self.pObsGivenModel[t]=0
 			for i in xrange(N):
 				for j in xrange(N):
 					tmp+=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+				self.pObsGivenModel[t]+=self.alpha[t][i]*self.beta[t][i]
 #			self.pObsGivenModel[t]=tmp
 			normalizer=tmp
+			#print self.pObsGivenModel[t],tmp
+			assert abs(self.pObsGivenModel[t]-tmp)<0.00001
 			if PREVENTDIVIDEBYZERO:
 				if normalizer==0:
 					normalizer=1
