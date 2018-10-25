@@ -208,7 +208,7 @@ class HMM:
 							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
 					if PREVENTDIVIDEBYZERO:
 						if sumGamma==0:
-							sumGamma=1
+							sumGamma=0.5
 					self._B[j].mu=gammaObsSymbVk/sumGamma
 					self._B[j].sigmaSq=gammaVar/sumGamma
 					if self._B[j].sigmaSq<0.5:
@@ -226,7 +226,7 @@ class HMM:
 							gammaObsSymbVk+=self.gamma[t][j]
 					if PREVENTDIVIDEBYZERO:
 						if sumGamma==0:
-							sumGamma=1
+							sumGamma=0.5
 					self._B[j][k]=gammaObsSymbVk/sumGamma
 	def B(self,a,b):
 		if _1DGAUSS:
@@ -258,6 +258,6 @@ class HMM:
 					sumGamma+=self.gamma[t][i]
 				if PREVENTDIVIDEBYZERO:
 					if sumGamma==0:
-						sumGamma=1
+						sumGamma=0.5
 				self.A[i][j]=sumXi/sumGamma
 		self.updateB(obs)

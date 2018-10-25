@@ -54,10 +54,9 @@ def inputHandler():
 			infoEvent.set()
 		elif inp=='stat':
 			statEvent.set()
-def main(argv):
-	runEvent.set()
-	inpHand=threading.Thread(None,inputHandler)
-	inpHand.start()
+		elif inp=='r':
+			runTest()
+def runTest():
 	predictions=[]
 	probabilities=[]
 	for trial in xrange(TRIALS):
@@ -131,6 +130,11 @@ def main(argv):
 		for s in xrange(SYMBOLS):
 			absError+=abs(predictions[t][s]-probabilities[t][s])
 	print 'absError:',absError*1.0/TRIALS
-	print 'main thread finished.  type q to exit.'
+	print 'main thread finished.  type q to exit.  type r to restart.'
+def main(argv):
+	runEvent.set()
+	inpHand=threading.Thread(None,inputHandler)
+	inpHand.start()
+	runTest()
 if __name__=='__main__':
 	main(sys.argv)
