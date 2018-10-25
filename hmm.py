@@ -164,6 +164,7 @@ class HMM:
 				for i in xrange(self.N):
 					if self.delta[t-1][i]<0.01:
 						self.delta[t-1][i]*=100.0
+				for i in xrange(self.N):
 					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
 						maxVal=tmp
@@ -210,6 +211,8 @@ class HMM:
 							sumGamma=1
 					self._B[j].mu=gammaObsSymbVk/sumGamma
 					self._B[j].sigmaSq=gammaVar/sumGamma
+					if self._B[j].sigmaSq<0.5:
+						self._B[j].sigmaSq=0.5
 		elif _KDGAUSS:
 			self._B[0][0]=0
 		else:
