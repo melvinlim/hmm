@@ -13,7 +13,7 @@ def randomizeMatrix(mat):
 	N=len(mat[0])
 	for i in xrange(M):
 		for j in xrange(N):
-			mat[i][j]=random.randint(0,100)/100.0
+			mat[i][j]=random.randint(1,100)/100.0
 class HMM:
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
@@ -49,6 +49,8 @@ class HMM:
 #		myprint.pprint(self.delta)
 #		print 'psi =',
 #		myprint.pprint(self.psi)
+		print 'scalefactor =',
+		myprint.pprinta(self.scalefactor)
 		pSymb=array(self.M,0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):

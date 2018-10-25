@@ -2,6 +2,8 @@ import random
 import sys
 import hmm
 import myprint
+import threading
+runEvent=threading.Event()
 UPDATES=50
 TRIALS=5
 STATES=3
@@ -40,7 +42,15 @@ class Jars:
 			index=random.randint(0,self.n-1)
 		self.previousIndex=index
 		return self.list[index].draw()
+def inputHandler():
+	while runEvent.is_set():
+		inp=raw_input()
+		if inp=='q':
+			runEvent.clear()
 def main(argv):
+	runEvent.set()
+	inpHand=threading.Thread(None,inputHandler)
+	inpHand.start()
 	predictions=[]
 	probabilities=[]
 	for trial in xrange(TRIALS):
@@ -61,6 +71,8 @@ def main(argv):
 		correct=0
 		randomCorrect=0
 		for t in xrange(TESTOBS):
+			if not runEvent.is_set():
+				return
 			print 'test iter:',t
 			(prediction,state)=model.predict()
 			o=jars.draw()
