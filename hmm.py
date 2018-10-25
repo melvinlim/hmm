@@ -7,11 +7,11 @@ PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
 _1DGAUSS=False
 _KDGAUSS=False
-def array(n,xi=0):
+def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
-def matrix(m,n,xi=0):
+def matrix(m,n,xi=0.0):
 	return [[xi for _ in xrange(n)] for _ in xrange(m)]
-def tensor(i,j,k,xi=0):
+def tensor(i,j,k,xi=0.0):
 	return [[[xi for _ in xrange(k)] for _ in xrange(j)] for _ in xrange(i)]
 def randomizeMatrix(mat):
 	M=len(mat)
@@ -37,6 +37,8 @@ class HMM:
 		self.pi=array(N,tmp)
 		self.alpha=matrix(T,N)
 		self.beta=matrix(T,N)
+		self.alphaHat=matrix(T,N)
+		self.betaHat=matrix(T,N)
 		self.delta=matrix(T,N)
 		self.psi=matrix(T,N)
 		self.xi=tensor(T,N,N)
@@ -58,9 +60,10 @@ class HMM:
 #		myprint.pprint(self.delta)
 #		print 'psi =',
 #		myprint.pprint(self.psi)
-		print 'scalefactor =',
-		myprint.pprinta(self.scalefactor)
-		pSymb=array(self.M,0)
+		if not NOSCALEFACTOR:
+			print 'scalefactor =',
+			myprint.pprinta(self.scalefactor)
+		pSymb=array(self.M,0.0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):
 				#pSymb[j]+=self.B[i][j]
@@ -117,10 +120,8 @@ class HMM:
 			self.scalefactor[0]=1.0/tmp
 		else:
 			self.scalefactor[0]=1.0
-		if NOSCALEFACTOR:
-			self.scalefactor[0]=1.0
 		for i in xrange(self.N):
-			self.alpha[0][i]=self.alpha[0][i]*self.scalefactor[0]
+			self.alphaHat[0][i]=self.alpha[0][i]*self.scalefactor[0]
 		for t in xrange(self.T-1):
 			self.scalefactor[t+1]=0
 			for j in xrange(self.N):
@@ -133,19 +134,20 @@ class HMM:
 				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
 			else:
 				self.scalefactor[t+1]=1.0
-			if NOSCALEFACTOR:
-				self.scalefactor[t+1]=1.0
 			for i in xrange(self.N):
-				self.alpha[t+1][i]=self.alpha[t+1][i]*self.scalefactor[t+1]
+				self.alphaHat[t+1][i]=self.alpha[t+1][i]*self.scalefactor[t+1]
 	def backward(self,obs):
 		for i in xrange(self.N):
 			self.beta[self.T-1][i]=1
+		for i in xrange(self.N):
+			self.betaHat[self.T-1][i]=1*self.scalefactor[self.T-1]
 		for t in xrange(self.T-1-1,-1,-1):
 			for i in xrange(self.N):
 				tmp=0
 				for j in xrange(self.N):
 					tmp+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-				self.beta[t][i]=tmp*self.scalefactor[t]
+				self.beta[t][i]=tmp
+				self.betaHat[t][i]=tmp*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
@@ -156,7 +158,7 @@ class HMM:
 				maxArg=0
 				for i in xrange(self.N):
 					if self.delta[t-1][i]<0.01:
-						self.delta[t-1][i]*=100
+						self.delta[t-1][i]*=100.0
 					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
 						maxVal=tmp
@@ -226,6 +228,12 @@ class HMM:
 		else:
 			return self._B[a][b]
 	def update(self,obs):
+		if NOSCALEFACTOR:
+			alpha=self.alpha
+			beta=self.beta
+		else:
+			alpha=self.alphaHat
+			beta=self.betaHat
 		N=self.N
 		M=self.M
 		T=self.T
@@ -234,8 +242,8 @@ class HMM:
 			self.pObsGivenModel[t]=0
 			for i in xrange(N):
 				for j in xrange(N):
-					tmp+=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-				self.pObsGivenModel[t]+=self.alpha[t][i]*self.beta[t][i]
+					tmp+=alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*beta[t+1][j]
+				self.pObsGivenModel[t]+=alpha[t][i]*beta[t][i]
 #			self.pObsGivenModel[t]=tmp
 			normalizer=tmp
 			#print self.pObsGivenModel[t],tmp
@@ -247,7 +255,7 @@ class HMM:
 				xij=0
 				tmp=0
 				for j in xrange(N):
-					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/normalizer
+					xij=alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*beta[t+1][j]/normalizer
 					self.xi[t][i][j]=xij
 					tmp+=xij
 				self.gamma[t][i]=tmp
