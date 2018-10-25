@@ -53,10 +53,10 @@ class HMM:
 		myprint.pprint(self.A)
 #		print 'B =',
 #		myprint.pprint(self.B)
-		print 'alpha =',
-		myprint.pprint(self.alpha)
-		print 'beta =',
-		myprint.pprint(self.beta)
+#		print 'alpha =',
+#		myprint.pprint(self.alpha)
+#		print 'beta =',
+#		myprint.pprint(self.beta)
 #		print 'delta =',
 #		myprint.pprint(self.delta)
 #		print 'psi =',
@@ -250,20 +250,30 @@ class HMM:
 			self.pObsGivenModel[t]=0
 			for i in xrange(N):
 				for j in xrange(N):
-					tmp+=alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*beta[t+1][j]
-				self.pObsGivenModel[t]+=alpha[t][i]*beta[t][i]
+					tmp+=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+				self.pObsGivenModel[t]+=self.alpha[t][i]*self.beta[t][i]
 #			self.pObsGivenModel[t]=tmp
 			normalizer=tmp
 			#print self.pObsGivenModel[t],tmp
 			#assert abs(self.pObsGivenModel[t]-tmp)<0.00001
-			if PREVENTDIVIDEBYZERO:
-				if normalizer==0:
-					normalizer=1
+#			if PREVENTDIVIDEBYZERO:
+#				if normalizer==0:
+#					normalizer=1
 			for i in xrange(N):
 				xij=0
 				tmp=0
 				for j in xrange(N):
-					xij=alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*beta[t+1][j]/normalizer
+					if PREVENTDIVIDEBYZERO:
+						if normalizer==0:
+							print 'norm 0'
+					#		normalizer=1
+							xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+							xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+							print xij,xijHat
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/normalizer
+					xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+#					print xij,xijHat
+					assert abs(xij-xijHat)<0.000001
 					self.xi[t][i][j]=xij
 					tmp+=xij
 				self.gamma[t][i]=tmp
