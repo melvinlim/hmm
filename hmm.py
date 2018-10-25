@@ -195,44 +195,30 @@ class HMM:
 		N=self.N
 		M=self.M
 		T=self.T
-		if _1DGAUSS:
-			for j in xrange(N):
-				for k in xrange(M):
-					gammaObsSymbVk=0
-					gammaVar=0
-					sumGamma=0
-					for t in xrange(T):
-						sumGamma+=self.gamma[t][j]
-						if obs[t]==k:
-							gammaObsSymbVk+=self.gamma[t][j]
+		for j in xrange(N):
+			for k in xrange(M):
+				gammaObsSymbVk=0
+				sumGamma=0
+				gammaVar=0
+				for t in xrange(T):
+					sumGamma+=self.gamma[t][j]
+					if obs[t]==k:
+						gammaObsSymbVk+=self.gamma[t][j]
+						if _1DGAUSS:
 							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
-					if PREVENTDIVIDEBYZERO:
-						if sumGamma==0:
-							sumGamma=0.5
+				if PREVENTDIVIDEBYZERO:
+					if sumGamma==0:
+						sumGamma=0.5
+				if _1DGAUSS:
 					self._B[j].mu=gammaObsSymbVk/sumGamma
 					self._B[j].sigmaSq=gammaVar/sumGamma
 					if self._B[j].sigmaSq<0.5:
 						self._B[j].sigmaSq=0.5
-		elif _KDGAUSS:
-			self._B[0][0]=0
-		else:
-			for j in xrange(N):
-				for k in xrange(M):
-					gammaObsSymbVk=0
-					sumGamma=0
-					for t in xrange(T):
-						sumGamma+=self.gamma[t][j]
-						if obs[t]==k:
-							gammaObsSymbVk+=self.gamma[t][j]
-					if PREVENTDIVIDEBYZERO:
-						if sumGamma==0:
-							sumGamma=0.5
+				else:
 					self._B[j][k]=gammaObsSymbVk/sumGamma
 	def B(self,a,b):
 		if _1DGAUSS:
 			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigmaSq)/(math.sqrt(2*math.pi*self._B[a].sigmaSq))
-		elif _KDGAUSS:
-			return self._B[a][b]
 		else:
 			return self._B[a][b]
 	def update(self,obs):
