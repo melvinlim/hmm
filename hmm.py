@@ -3,7 +3,7 @@ import myprint
 import math
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-_1DGAUSS=False
+#_1DGAUSS=False
 _KDGAUSS=False
 def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
@@ -17,10 +17,12 @@ def randomizeMatrix(mat):
 	for i in xrange(M):
 		for j in xrange(N):
 			mat[i][j]=random.randint(5,100)/100.0
-class Mixture:
+class Gaussian:
 	def __init__(self,mu,sigmaSq):
 		self.mu=mu
 		self.sigmaSq=sigmaSq
+	def value(self,obs):
+		return math.exp(-0.5*(obs-self.mu)**2/self.sigmaSq)/(math.sqrt(2*math.pi*self.sigmaSq))
 class HMM:
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
@@ -180,12 +182,16 @@ class HMM:
 			for i in xrange(N):
 				mu=i
 				sigmaSq=1.0
-				self._B[i]=Mixture(mu,sigmaSq)
+				self._B[i]=Gaussian(mu,sigmaSq)
 		elif _KDGAUSS:
 			N=self.N
 			M=self.M
-			self._B=matrix(N,M,1.0/N)
-			randomizeMatrix(self._B)
+			self._B=matrix(N,M)
+			for j in xrange(N):
+				for k in xrange(M):
+					mu=k
+					sigmaSq=1.0
+					self._B[j][k]=Gaussian(mu,sigmaSq)
 		else:
 			N=self.N
 			M=self.M
@@ -214,13 +220,18 @@ class HMM:
 					self._B[j].sigmaSq=gammaVar/sumGamma
 					if self._B[j].sigmaSq<0.5:
 						self._B[j].sigmaSq=0.5
+				elif _KDGAUSS:
+					gammatjk=0
+#					for m in xrange(M):
+#						gammatjk+=self.mixCo[j][m]*self._B[
 				else:
 					self._B[j][k]=gammaObsSymbVk/sumGamma
-	def B(self,a,b):
+	def B(self,state,obs):
 		if _1DGAUSS:
-			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigmaSq)/(math.sqrt(2*math.pi*self._B[a].sigmaSq))
+#			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigmaSq)/(math.sqrt(2*math.pi*self._B[a].sigmaSq))
+			return self._B[state].value(obs)
 		else:
-			return self._B[a][b]
+			return self._B[state][obs]
 	def update(self,obs):
 		N=self.N
 		M=self.M
