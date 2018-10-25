@@ -7,7 +7,7 @@ TRIALS=5
 STATES=3
 SYMBOLS=3
 OBSERVATIONS=50
-TESTOBS=10
+TESTOBS=50
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l
@@ -59,12 +59,15 @@ def main(argv):
 			model.viterbi(obs)
 			model.update(obs)
 		correct=0
+		randomCorrect=0
 		for t in xrange(TESTOBS):
 			print 'test iter:',t
 			(prediction,state)=model.predict()
 			o=jars.draw()
 			if o==prediction:
 				correct+=1
+			if random.randint(0,SYMBOLS)==o:
+				randomCorrect+=1
 			print 'state:',state
 			print 'predicted:',prediction
 			print 'drew:',o
@@ -76,6 +79,7 @@ def main(argv):
 				model.viterbi(obs)
 				model.update(obs)
 		print 'correct/testobs=',correct,TESTOBS
+		print 'random correct/testobs=',randomCorrect,TESTOBS
 		predicted=model.info()
 		predictions.append(predicted)
 		pSymb=[]
