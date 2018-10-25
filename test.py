@@ -4,6 +4,8 @@ import hmm
 import myprint
 import threading
 runEvent=threading.Event()
+infoEvent=threading.Event()
+statEvent=threading.Event()
 UPDATES=50
 TRIALS=5
 STATES=3
@@ -47,6 +49,10 @@ def inputHandler():
 		inp=raw_input()
 		if inp=='q':
 			runEvent.clear()
+		elif inp=='info':
+			infoEvent.set()
+		elif inp=='stat':
+			statEvent.set()
 def main(argv):
 	runEvent.set()
 	inpHand=threading.Thread(None,inputHandler)
@@ -70,19 +76,26 @@ def main(argv):
 			model.update(obs)
 		correct=0
 		randomCorrect=0
+		stats=''
 		for t in xrange(TESTOBS):
 			if not runEvent.is_set():
 				return
-			print 'test iter:',t
+			elif statEvent.is_set():
+				statEvent.clear()
+				print stats
+			elif infoEvent.is_set():
+				infoEvent.clear()
+				model.info()
+			stats+='test iter:'+str(t)+'\n'
 			(prediction,state)=model.predict()
 			o=jars.draw()
 			if o==prediction:
 				correct+=1
 			if random.randint(0,SYMBOLS)==o:
 				randomCorrect+=1
-			print 'state:',state
-			print 'predicted:',prediction
-			print 'drew:',o
+			stats+='state:'+str(state)+'\n'
+			stats+='predicted:'+str(prediction)+'\n'
+			stats+='drew:'+str(o)+'\n'
 			obs.pop(0)
 			obs.append(o)
 			for t in xrange(UPDATES):
