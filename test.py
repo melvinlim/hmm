@@ -130,5 +130,6 @@ def main(argv):
 		for s in xrange(SYMBOLS):
 			absError+=abs(predictions[t][s]-probabilities[t][s])
 	print 'absError:',absError*1.0/TRIALS
+	print 'main thread finished.  type q to exit.'
 if __name__=='__main__':
 	main(sys.argv)

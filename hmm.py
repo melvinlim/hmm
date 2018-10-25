@@ -23,8 +23,7 @@ class HMM:
 		M=self.M
 		T=self.T
 		self.A=matrix(N,N,0.1)
-		self.B=matrix(N,M,1.0/STATES)
-		randomizeMatrix(self.B)
+		self.initB()
 		tmp=1.0/N
 		self.pi=array(N,tmp)
 		self.alpha=matrix(T,N)
@@ -39,8 +38,8 @@ class HMM:
 		myprint.pprinta(self.pi)
 		print 'A =',
 		myprint.pprint(self.A)
-		print 'B =',
-		myprint.pprint(self.B)
+#		print 'B =',
+#		myprint.pprint(self.B)
 #		print 'alpha =',
 #		myprint.pprint(self.alpha)
 #		print 'beta =',
@@ -54,7 +53,8 @@ class HMM:
 		pSymb=array(self.M,0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):
-				pSymb[j]+=self.B[i][j]
+				#pSymb[j]+=self.B[i][j]
+				pSymb[j]+=self.B(i,j)
 		norm=sum(pSymb)
 		for j in xrange(self.M):
 			pSymb[j]/=norm
@@ -88,17 +88,17 @@ class HMM:
 				tmp=self.delta[T-1][i]
 				maxArg=i
 		state=maxArg
-		tmp=self.B[state][0]
+		tmp=self.B(state,0)
 		maxArg=0
 		for i in xrange(1,M):
-			if self.B[state][i]>tmp:
-				tmp=self.B[state][i]
+			if self.B(state,i)>tmp:
+				tmp=self.B(state,i)
 				maxArg=i
 		return maxArg,state
 	def forward(self,obs):
 		tmp=0
 		for i in xrange(self.N):
-			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
+			self.alpha[0][i]=self.pi[i]*self.B(i,obs[0])
 			tmp+=self.alpha[0][i]
 		self.scalefactor[0]=1.0/tmp
 		if NOSCALEFACTOR:
@@ -111,7 +111,7 @@ class HMM:
 				sumalpha=0
 				for i in xrange(self.N):
 					sumalpha+=self.alpha[t][i]*self.A[i][j]
-				self.alpha[t+1][j]=sumalpha*self.B[j][obs[t+1]]
+				self.alpha[t+1][j]=sumalpha*self.B(j,obs[t+1])
 				self.scalefactor[t+1]+=self.alpha[t+1][j]
 			self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
 			if NOSCALEFACTOR:
@@ -125,11 +125,11 @@ class HMM:
 			for i in xrange(self.N):
 				tmp=0
 				for j in xrange(self.N):
-					tmp+=self.A[i][j]*self.B[j][obs[t+1]]*self.beta[t+1][j]
+					tmp+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 				self.beta[t][i]=tmp*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
-			self.delta[0][i]=self.pi[i]*self.B[i][obs[0]]
+			self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
 			self.psi[0][i]=-1
 		for t in xrange(1,self.T):
 			for j in xrange(self.N):
@@ -143,8 +143,17 @@ class HMM:
 						maxVal=tmp
 						maxArg=i
 #						print maxVal,maxArg
-				self.delta[t][j]=maxVal*self.B[j][obs[t]]
+				self.delta[t][j]=maxVal*self.B(j,obs[t])
 				self.psi[t][j]=maxArg
+	def initB(self):
+		N=self.N
+		M=self.M
+		self._B=matrix(N,M,1.0/N)
+		randomizeMatrix(self._B)
+	def updateB(self,j,k,gammaObsSymbVk,sumGamma):
+		self._B[j][k]=gammaObsSymbVk/sumGamma
+	def B(self,a,b):
+		return self._B[a][b]
 	def update(self,obs):
 		N=self.N
 		M=self.M
@@ -153,14 +162,14 @@ class HMM:
 			tmp=0
 			for i in xrange(N):
 				for j in xrange(N):
-					tmp+=self.alpha[t][i]*self.A[i][j]*self.B[j][obs[t+1]]*self.beta[t+1][j]
+					tmp+=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 #			self.pObsGivenModel[t]=tmp
 			normalizer=tmp
 			for i in xrange(N):
 				xij=0
 				tmp=0
 				for j in xrange(N):
-					xij=self.alpha[t][i]*self.A[i][j]*self.B[j][obs[t+1]]*self.beta[t+1][j]/normalizer
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/normalizer
 					self.xi[t][i][j]=xij
 					tmp+=xij
 				self.gamma[t][i]=tmp
@@ -182,4 +191,4 @@ class HMM:
 					sumGamma+=self.gamma[t][j]
 					if obs[t]==k:
 						gammaObsSymbVk+=self.gamma[t][j]
-				self.B[j][k]=gammaObsSymbVk/sumGamma
+				self.updateB(j,k,gammaObsSymbVk,sumGamma)
