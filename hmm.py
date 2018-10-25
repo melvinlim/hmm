@@ -1,8 +1,12 @@
 import random
 import myprint
+import math
 NOSCALEFACTOR=False
 #NOSCALEFACTOR=True
 PREVENTDIVIDEBYZERO=True
+_1DGAUSS=True
+_1DGAUSS=False
+_KDGAUSS=False
 def array(n,xi=0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0):
@@ -15,6 +19,10 @@ def randomizeMatrix(mat):
 	for i in xrange(M):
 		for j in xrange(N):
 			mat[i][j]=random.randint(1,100)/100.0
+class Mixture:
+	def __init__(self,mu,sigma):
+		self.mu=mu
+		self.sigma=sigma
 class HMM:
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
@@ -156,14 +164,63 @@ class HMM:
 				self.delta[t][j]=maxVal*self.B(j,obs[t])
 				self.psi[t][j]=maxArg
 	def initB(self):
+		if _1DGAUSS:
+			N=self.N
+			M=self.M
+			self._B=array(N)
+			for i in xrange(N):
+				mu=i
+				sigma=1.0
+				self._B[i]=Mixture(mu,sigma)
+		elif _KDGAUSS:
+			N=self.N
+			M=self.M
+			self._B=matrix(N,M,1.0/N)
+			randomizeMatrix(self._B)
+		else:
+			N=self.N
+			M=self.M
+			self._B=matrix(N,M,1.0/N)
+			randomizeMatrix(self._B)
+	def updateB(self,obs):
 		N=self.N
 		M=self.M
-		self._B=matrix(N,M,1.0/N)
-		randomizeMatrix(self._B)
-	def updateB(self,j,k,gammaObsSymbVk,sumGamma):
-		self._B[j][k]=gammaObsSymbVk/sumGamma
+		T=self.T
+		if _1DGAUSS:
+			for j in xrange(N):
+				for k in xrange(M):
+					gammaObsSymbVk=0
+					sumGamma=0
+					for t in xrange(T):
+						sumGamma+=self.gamma[t][j]
+						if obs[t]==k:
+							gammaObsSymbVk+=self.gamma[t][j]
+					if PREVENTDIVIDEBYZERO:
+						if sumGamma==0:
+							sumGamma=1
+					self._B[j].mu=gammaObsSymbVk/sumGamma
+		elif _KDGAUSS:
+			self._B[0][0]=0
+		else:
+			for j in xrange(N):
+				for k in xrange(M):
+					gammaObsSymbVk=0
+					sumGamma=0
+					for t in xrange(T):
+						sumGamma+=self.gamma[t][j]
+						if obs[t]==k:
+							gammaObsSymbVk+=self.gamma[t][j]
+					if PREVENTDIVIDEBYZERO:
+						if sumGamma==0:
+							sumGamma=1
+					self._B[j][k]=gammaObsSymbVk/sumGamma
 	def B(self,a,b):
-		return self._B[a][b]
+		if _1DGAUSS:
+			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigma**2)/(math.sqrt(2*math.pi*self._B[a].sigma**2))
+		elif _KDGAUSS:
+			return self._B[a][b]
+		else:
+			return self._B[a][b]
 	def update(self,obs):
 		N=self.N
 		M=self.M
@@ -199,15 +256,4 @@ class HMM:
 					if sumGamma==0:
 						sumGamma=1
 				self.A[i][j]=sumXi/sumGamma
-		for j in xrange(N):
-			for k in xrange(M):
-				gammaObsSymbVk=0
-				sumGamma=0
-				for t in xrange(T):
-					sumGamma+=self.gamma[t][j]
-					if obs[t]==k:
-						gammaObsSymbVk+=self.gamma[t][j]
-				if PREVENTDIVIDEBYZERO:
-					if sumGamma==0:
-						sumGamma=1
-				self.updateB(j,k,gammaObsSymbVk,sumGamma)
+		self.updateB(obs)
