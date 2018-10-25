@@ -1,4 +1,5 @@
 import random
+NOSCALEFACTOR=True
 def pprinta(array):
 	for element in array:
 		print '\t%.3f'%element,
@@ -88,6 +89,8 @@ class HMM:
 			self.alpha[0][i]=self.pi[i]*self.B[i][obs[0]]
 			tmp+=self.alpha[0][i]
 		self.scalefactor[0]=1.0/tmp
+		if NOSCALEFACTOR:
+			self.scalefactor[0]=1.0
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.alpha[0][i]*self.scalefactor[0]
 		for t in xrange(self.T-1):
@@ -99,6 +102,8 @@ class HMM:
 				self.alpha[t+1][j]=sumalpha*self.B[j][obs[t+1]]
 				self.scalefactor[t+1]+=self.alpha[t+1][j]
 			self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
+			if NOSCALEFACTOR:
+				self.scalefactor[t+1]=1.0
 			for i in xrange(self.N):
 				self.alpha[t+1][i]=self.alpha[t+1][i]*self.scalefactor[t+1]
 	def backward(self,obs):
