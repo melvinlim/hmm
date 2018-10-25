@@ -1,15 +1,7 @@
 import random
-NOSCALEFACTOR=True
-def pprinta(array):
-	for element in array:
-		print '\t%.3f'%element,
-	print
-def pprint(matrix):
-	for row in matrix:
-		for element in row:
-			print '\t%.3f'%element,
-		print
-	print
+import myprint
+NOSCALEFACTOR=False
+#NOSCALEFACTOR=True
 def array(n,xi=0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0):
@@ -44,19 +36,19 @@ class HMM:
 		self.scalefactor=array(T,0)
 	def info(self):
 		print 'pi =',
-		pprinta(self.pi)
+		myprint.pprinta(self.pi)
 		print 'A =',
-		pprint(self.A)
+		myprint.pprint(self.A)
 		print 'B =',
-		pprint(self.B)
+		myprint.pprint(self.B)
 #		print 'alpha =',
-#		pprint(self.alpha)
+#		myprint.pprint(self.alpha)
 #		print 'beta =',
-#		pprint(self.beta)
+#		myprint.pprint(self.beta)
 #		print 'delta =',
-#		pprint(self.delta)
+#		myprint.pprint(self.delta)
 #		print 'psi =',
-#		pprint(self.psi)
+#		myprint.pprint(self.psi)
 		pSymb=array(self.M,0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):
@@ -65,7 +57,7 @@ class HMM:
 		for j in xrange(self.M):
 			pSymb[j]/=norm
 		print 'pSymb =',
-		pprinta(pSymb)
+		myprint.pprinta(pSymb)
 		T=self.T
 		tmp=self.delta[T-1][0]
 		maxArg=0
@@ -83,6 +75,7 @@ class HMM:
 		record.reverse()
 		print 'sta:',
 		print record
+		return pSymb
 	def forward(self,obs):
 		tmp=0
 		for i in xrange(self.N):

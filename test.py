@@ -1,6 +1,7 @@
 import random
 import sys
 import hmm
+import myprint
 UPDATES=500
 TRIALS=5
 STATES=3
@@ -39,33 +40,47 @@ class Jars:
 		self.previousIndex=index
 		return self.list[index].draw()
 def main(argv):
-	model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
-	jars=Jars()
-	jars.put(Jar([0,0,0,0,0,1,1,2]))
-	jars.put(Jar([0,1,1,1,1,0,2,2]))
-	jars.put(Jar([0,2,2,2,1,2]))
-	obs=[]
-	for i in xrange(OBSERVATIONS):
-		obs.append(jars.draw())
-	#model.info()
-	for t in xrange(UPDATES):
-		model.forward(obs)
-		model.backward(obs)
-		model.viterbi(obs)
-		model.update(obs)
-	model.info()
-	pSymb=[]
-	for i in xrange(SYMBOLS):
-		pSymb.append(0.0)
-	total=0
-	for o in obs:
-		pSymb[o]+=1.0
-		total+=1.0
-	for t in xrange(SYMBOLS):
-		pSymb[t]/=total
-	print 'actual pSymb',
-	print pSymb
-	print 'obs:',
-	print obs
+	predictions=[]
+	probabilities=[]
+	for trial in xrange(TRIALS):
+		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
+		jars=Jars()
+		jars.put(Jar([0,0,0,0,0,0,0,0,0,1,1,0,0,0,2]))
+		jars.put(Jar([0,1,1,1,1,0,2,2]))
+		jars.put(Jar([0,2,2,2,1,2]))
+		obs=[]
+		for i in xrange(OBSERVATIONS):
+			obs.append(jars.draw())
+		#model.info()
+		for t in xrange(UPDATES):
+			model.forward(obs)
+			model.backward(obs)
+			model.viterbi(obs)
+			model.update(obs)
+		predicted=model.info()
+		predictions.append(predicted)
+		pSymb=[]
+		for i in xrange(SYMBOLS):
+			pSymb.append(0.0)
+		total=0
+		for o in obs:
+			pSymb[o]+=1.0
+			total+=1.0
+		for t in xrange(SYMBOLS):
+			pSymb[t]/=total
+		print 'actual pSymb',
+		print pSymb
+		probabilities.append(pSymb)
+		print 'obs:',
+		print obs
+	print 'pred:',
+	myprint.pprint(predictions)
+	print 'prob:',
+	myprint.pprint(probabilities)
+	absError=0
+	for t in xrange(TRIALS):
+		for s in xrange(SYMBOLS):
+			absError+=abs(predictions[t][s]-probabilities[t][s])
+	print 'absError:',absError*1.0/TRIALS
 if __name__=='__main__':
 	main(sys.argv)
