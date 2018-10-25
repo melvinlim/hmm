@@ -261,7 +261,8 @@ class HMM:
 #					normalizer=1
 			for i in xrange(N):
 				xij=0
-				tmp=0
+				sumXijJ=0
+				sumXijHatJ=0
 				for j in xrange(N):
 					if PREVENTDIVIDEBYZERO:
 						if normalizer==0:
@@ -275,8 +276,10 @@ class HMM:
 #					print xij,xijHat
 					assert abs(xij-xijHat)<0.000001
 					self.xi[t][i][j]=xij
-					tmp+=xij
-				self.gamma[t][i]=tmp
+					sumXijJ+=xij
+					sumXijHatJ+=xijHat
+				self.gamma[t][i]=sumXijJ
+				assert abs(sumXijJ-sumXijHatJ)<0.000001
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
 		for i in xrange(N):
