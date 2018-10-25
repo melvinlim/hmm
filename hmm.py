@@ -20,9 +20,9 @@ def randomizeMatrix(mat):
 		for j in xrange(N):
 			mat[i][j]=random.randint(1,100)/100.0
 class Mixture:
-	def __init__(self,mu,sigma):
+	def __init__(self,mu,sigmaSq):
 		self.mu=mu
-		self.sigma=sigma
+		self.sigmaSq=sigmaSq
 class HMM:
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
@@ -170,8 +170,8 @@ class HMM:
 			self._B=array(N)
 			for i in xrange(N):
 				mu=i
-				sigma=1.0
-				self._B[i]=Mixture(mu,sigma)
+				sigmaSq=1.0
+				self._B[i]=Mixture(mu,sigmaSq)
 		elif _KDGAUSS:
 			N=self.N
 			M=self.M
@@ -190,15 +190,18 @@ class HMM:
 			for j in xrange(N):
 				for k in xrange(M):
 					gammaObsSymbVk=0
+					gammaVar=0
 					sumGamma=0
 					for t in xrange(T):
 						sumGamma+=self.gamma[t][j]
 						if obs[t]==k:
 							gammaObsSymbVk+=self.gamma[t][j]
+							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
 					if PREVENTDIVIDEBYZERO:
 						if sumGamma==0:
 							sumGamma=1
 					self._B[j].mu=gammaObsSymbVk/sumGamma
+					self._B[j].sigmaSq=gammaVar/sumGamma
 		elif _KDGAUSS:
 			self._B[0][0]=0
 		else:
@@ -216,7 +219,7 @@ class HMM:
 					self._B[j][k]=gammaObsSymbVk/sumGamma
 	def B(self,a,b):
 		if _1DGAUSS:
-			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigma**2)/(math.sqrt(2*math.pi*self._B[a].sigma**2))
+			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigmaSq)/(math.sqrt(2*math.pi*self._B[a].sigmaSq))
 		elif _KDGAUSS:
 			return self._B[a][b]
 		else:
