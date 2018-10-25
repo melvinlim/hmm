@@ -1,8 +1,6 @@
 import random
 import myprint
 import math
-NOSCALEFACTOR=False
-#NOSCALEFACTOR=True
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
 _1DGAUSS=False
@@ -61,9 +59,8 @@ class HMM:
 #		myprint.pprint(self.delta)
 #		print 'psi =',
 #		myprint.pprint(self.psi)
-		if not NOSCALEFACTOR:
-			print 'scalefactor =',
-			myprint.pprinta(self.scalefactor)
+		print 'scalefactor =',
+		myprint.pprinta(self.scalefactor)
 		pSymb=array(self.M,0.0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):
@@ -236,50 +233,17 @@ class HMM:
 		else:
 			return self._B[a][b]
 	def update(self,obs):
-		if NOSCALEFACTOR:
-			alpha=self.alpha
-			beta=self.beta
-		else:
-			alpha=self.alphaHat
-			beta=self.betaHat
 		N=self.N
 		M=self.M
 		T=self.T
 		for t in xrange(T-1):
-			tmp=0
-			self.pObsGivenModel[t]=0
 			for i in xrange(N):
-				for j in xrange(N):
-					tmp+=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-				self.pObsGivenModel[t]+=self.alpha[t][i]*self.beta[t][i]
-#			self.pObsGivenModel[t]=tmp
-			normalizer=tmp
-			#print self.pObsGivenModel[t],tmp
-			#assert abs(self.pObsGivenModel[t]-tmp)<0.00001
-#			if PREVENTDIVIDEBYZERO:
-#				if normalizer==0:
-#					normalizer=1
-			for i in xrange(N):
-				xij=0
-				sumXijJ=0
 				sumXijHatJ=0
 				for j in xrange(N):
-					if PREVENTDIVIDEBYZERO:
-						if normalizer==0:
-							print 'norm 0'
-					#		normalizer=1
-							xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-							xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-							print xij,xijHat
-					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/normalizer
 					xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-#					print xij,xijHat
-					assert abs(xij-xijHat)<0.000001
-					self.xi[t][i][j]=xij
-					sumXijJ+=xij
+					self.xi[t][i][j]=xijHat
 					sumXijHatJ+=xijHat
-				self.gamma[t][i]=sumXijJ
-				assert abs(sumXijJ-sumXijHatJ)<0.000001
+				self.gamma[t][i]=sumXijHatJ
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
 		for i in xrange(N):
