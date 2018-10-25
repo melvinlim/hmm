@@ -6,12 +6,13 @@ import threading
 runEvent=threading.Event()
 infoEvent=threading.Event()
 statEvent=threading.Event()
-UPDATES=50
 TRIALS=5
 STATES=3
 SYMBOLS=3
 OBSERVATIONS=50
-TESTOBS=50
+OBSERVATIONS=6
+UPDATES=20
+TESTOBS=OBSERVATIONS/2
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l

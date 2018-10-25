@@ -18,7 +18,7 @@ def randomizeMatrix(mat):
 	N=len(mat[0])
 	for i in xrange(M):
 		for j in xrange(N):
-			mat[i][j]=random.randint(1,100)/100.0
+			mat[i][j]=random.randint(5,100)/100.0
 class Mixture:
 	def __init__(self,mu,sigmaSq):
 		self.mu=mu
@@ -31,10 +31,9 @@ class HMM:
 		N=self.N
 		M=self.M
 		T=self.T
-		self.A=matrix(N,N,0.1)
+		self.A=matrix(N,N,1.0/STATES)
 		self.initB()
-		tmp=1.0/N
-		self.pi=array(N,tmp)
+		self.pi=array(N,1.0/STATES)
 		self.alpha=matrix(T,N)
 		self.beta=matrix(T,N)
 		self.alphaHat=matrix(T,N)
@@ -52,10 +51,10 @@ class HMM:
 		myprint.pprint(self.A)
 #		print 'B =',
 #		myprint.pprint(self.B)
-#		print 'alpha =',
-#		myprint.pprint(self.alpha)
-#		print 'beta =',
-#		myprint.pprint(self.beta)
+		print 'alpha =',
+		myprint.pprint(self.alpha)
+		print 'beta =',
+		myprint.pprint(self.beta)
 #		print 'delta =',
 #		myprint.pprint(self.delta)
 #		print 'psi =',
