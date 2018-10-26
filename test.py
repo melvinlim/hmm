@@ -20,8 +20,12 @@ def inputHandler(records):
 			if inp=='q':
 				runEvent.clear()
 			elif inp=='info':
-				for i in xrange(3):
-					records[-1-i]['models'].info()
+				if len(records)>=3:
+					for i in xrange(3):
+						records[-1-i]['models'].info()
+						print
+				else:
+					print 'records not yet available'
 			elif inp=='r':
 				runTest()
 			else:
@@ -74,9 +78,10 @@ def runTest(testIter,records):
 				trialRecords[model]['details']+=details
 				trialRecords[model]['correct']+=correct
 		for model in mList:
-			stats='correct/testobs=\t%d\t%d\n'%(trialRecords[model]['correct'],TESTOBS)
+			stats='[%s] correct/testobs=\t%d\t%d\n'%(model.name,trialRecords[model]['correct'],TESTOBS)
 			trialRecords[model]['stats']=stats
 			records.append(trialRecords[model])
+			print stats
 	print 'finished test iteration #%d.  type q to exit.'%testIter
 	print record.keys()
 def main(argv):

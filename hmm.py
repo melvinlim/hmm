@@ -49,6 +49,7 @@ class Mixture:
 		print
 class HMM(object):
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
+		self.name='Code Table Model'
 		self.N=STATES
 		self.M=SYMBOLS
 		self.T=OBSERVATIONS
@@ -100,6 +101,7 @@ class HMM(object):
 			pSymb[j]/=norm
 		return pSymb
 	def info(self):
+		print self.name
 		for x in self._B:
 			x.printParams()
 		print 'pi =',
@@ -276,6 +278,7 @@ class HMM(object):
 class GMM(HMM):
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		super(GMM,self).__init__(STATES,SYMBOLS,OBSERVATIONS)
+		self.name='Gaussian Mixture Model'
 	def initB(self):
 		N=self.N
 		M=self.M
