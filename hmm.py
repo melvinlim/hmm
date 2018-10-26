@@ -3,7 +3,8 @@ import myprint
 import math
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-#_1DGAUSS=False
+_1DGAUSS=False
+_KDGAUSS=True
 _KDGAUSS=False
 def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
@@ -23,6 +24,24 @@ class Gaussian:
 		self.sigmaSq=sigmaSq
 	def value(self,obs):
 		return math.exp(-0.5*(obs-self.mu)**2/self.sigmaSq)/(math.sqrt(2*math.pi*self.sigmaSq))
+class Mixture:
+	def __init__(self,mus,sigmaSqs):
+		m=len(mus)
+		self.M=m
+		self.c=array(m,1.0/m)
+		self.gaussians=[]
+		for i in xrange(self.M):
+			self.gaussians.append(Gaussian(mus[i],sigmaSqs[i]))
+	def value(self,obs):
+		val=0
+		for m in xrange(self.M):
+			val+=self.c[m]*self.gaussians[m].value(obs)
+		return val
+	def params(self):
+		myprint.pprinta(self.c)
+		for g in self.gaussians:
+			print '%.2e'%g.mu,
+		print
 class HMM:
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
@@ -61,8 +80,8 @@ class HMM:
 #		myprint.pprint(self.delta)
 #		print 'psi =',
 #		myprint.pprint(self.psi)
-		print 'scalefactor =',
-		myprint.pprinta(self.scalefactor)
+#		print 'scalefactor =',
+#		myprint.pprinta(self.scalefactor)
 		pSymb=array(self.M,0.0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):
@@ -175,26 +194,26 @@ class HMM:
 				self.delta[t][j]=maxVal*self.B(j,obs[t])
 				self.psi[t][j]=maxArg
 	def initB(self):
+		N=self.N
+		M=self.M
 		if _1DGAUSS:
-			N=self.N
-			M=self.M
 			self._B=array(N)
 			for i in xrange(N):
 				mu=i
 				sigmaSq=1.0
 				self._B[i]=Gaussian(mu,sigmaSq)
 		elif _KDGAUSS:
-			N=self.N
-			M=self.M
-			self._B=matrix(N,M)
+			self._B=array(N)
 			for j in xrange(N):
+				mus=[]
+				sigmaSqs=[]
 				for k in xrange(M):
-					mu=k
+					mu=k+0.1*j
 					sigmaSq=1.0
-					self._B[j][k]=Gaussian(mu,sigmaSq)
+					mus.append(mu)
+					sigmaSqs.append(sigmaSq)
+				self._B[j]=Mixture(mus,sigmaSqs)
 		else:
-			N=self.N
-			M=self.M
 			self._B=matrix(N,M,1.0/N)
 			randomizeMatrix(self._B)
 	def updateB(self,obs):
@@ -202,33 +221,54 @@ class HMM:
 		M=self.M
 		T=self.T
 		for j in xrange(N):
+			#print j,
+			#self._B[j].params()
+			sumGammatjkTK=0
 			for k in xrange(M):
 				gammaObsSymbVk=0
+				gammaObsSymbVk2=0
 				sumGamma=0
+				sumGamma2=0
 				gammaVar=0
+				sumGammatjkT=0
+				gammatjkdotobs=0
 				for t in xrange(T):
+					if _KDGAUSS:
+						gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
+						sumGammatjkT+=gammatjk
 					sumGamma+=self.gamma[t][j]
 					if obs[t]==k:
 						gammaObsSymbVk+=self.gamma[t][j]
+						gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
+						sumGamma2+=self.gamma[t][j]
 						if _1DGAUSS:
 							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
+						elif _KDGAUSS:
+							gammatjkdotobs+=gammatjk*obs[t]
 				if PREVENTDIVIDEBYZERO:
 					if sumGamma==0:
 						sumGamma=0.5
 				if _1DGAUSS:
-					self._B[j].mu=gammaObsSymbVk/sumGamma
-					self._B[j].sigmaSq=gammaVar/sumGamma
+					self._B[j].mu=gammaObsSymbVk2/sumGamma2
+#					print self._B[j].mu
+					self._B[j].sigmaSq=gammaVar/sumGamma2
 					if self._B[j].sigmaSq<0.5:
 						self._B[j].sigmaSq=0.5
 				elif _KDGAUSS:
-					gammatjk=0
-#					for m in xrange(M):
-#						gammatjk+=self.mixCo[j][m]*self._B[
+					if sumGammatjkT==0:
+						sumGammatjkT=1
+					self._B[j].c[k]=sumGammatjkT
+					self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
+					sumGammatjkTK+=sumGammatjkT
 				else:
 					self._B[j][k]=gammaObsSymbVk/sumGamma
+			if _KDGAUSS:
+				for k in xrange(M):
+					self._B[j].c[k]/=sumGammatjkTK
 	def B(self,state,obs):
 		if _1DGAUSS:
-#			return math.exp(-0.5*(b-self._B[a].mu)**2/self._B[a].sigmaSq)/(math.sqrt(2*math.pi*self._B[a].sigmaSq))
+			return self._B[state].value(obs)
+		elif _KDGAUSS:
 			return self._B[state].value(obs)
 		else:
 			return self._B[state][obs]
