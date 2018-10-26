@@ -3,9 +3,9 @@ import myprint
 import math
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-#_1DGAUSS=False
+_1DGAUSS=False
 _KDGAUSS=True
-_KDGAUSS=False
+#_KDGAUSS=False
 def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0.0):
@@ -252,10 +252,9 @@ class HMM:
 					sumGamma2=0
 					gammaVar=0
 					for t in xrange(T):
-#						if obs[t]==k:
-							gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
-							sumGamma2+=self.gamma[t][j]
-							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
+						gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
+						sumGamma2+=self.gamma[t][j]
+						gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
 #					if PREVENTDIVIDEBYZERO:
 #						if sumGamma==0:
 #							sumGamma=0.5
@@ -270,10 +269,9 @@ class HMM:
 					sumGammatjkT=0
 					gammatjkdotobs=0
 					for t in xrange(T):
-						if obs[t]==k:
-							gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
-							sumGammatjkT+=gammatjk
-							gammatjkdotobs+=gammatjk*obs[t]
+						gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
+						sumGammatjkT+=gammatjk
+						gammatjkdotobs+=gammatjk*obs[t]
 					if sumGammatjkT==0:
 						sumGammatjkT=1
 					self._B[j].c[k]=sumGammatjkT
