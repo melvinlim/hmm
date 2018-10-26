@@ -22,14 +22,12 @@ def inputHandler(records):
 				runEvent.clear()
 			elif inp=='info':
 				infoEvent.set()
-			elif inp=='details':
-				for r in records:
-					print r['details']
-			elif inp=='m':
-				for r in records:
-					print r['model']
 			elif inp=='r':
 				runTest()
+			else:
+				for r in records:
+					if inp in r:
+						print r[inp]
 		except:
 			info=sys.exc_info()
 			print 'exception:'
@@ -71,8 +69,9 @@ def runTest(testIter,records):
 			task.getSingleNoisy(0,NOISEVAR,trueObs,noisyObs)
 			for t in xrange(UPDATES):
 				model.train(noisyObs)
-		print 'correct/testobs=',correct,TESTOBS
-		print 'random correct/testobs=',randomCorrect,TESTOBS
+		stats=''
+		stats+='correct/testobs=\t%d\t%d\n'%(correct,TESTOBS)
+		stats+='random correct/testobs=\t%d\t%d\n'%(randomCorrect,TESTOBS)
 		predicted=model.info()
 		predictions.append(predicted)
 		pSymb=[]
@@ -89,6 +88,7 @@ def runTest(testIter,records):
 		probabilities.append(pSymb)
 		print 'obs:',
 		myprint.pprinta(noisyObs)
+		record['stats']=stats
 		record['details']=details
 #	print 'pred:',
 #	myprint.pprint(predictions)
