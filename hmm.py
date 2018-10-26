@@ -48,8 +48,9 @@ class Mixture:
 			print '%.2e'%g.mu,
 		print
 class HMM(object):
-	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
+	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS):
 		self.name='Code Table Model'
+		self.trainingIters=TRAININGITERS
 		self.N=STATES
 		self.M=SYMBOLS
 		self.T=OBSERVATIONS
@@ -72,10 +73,11 @@ class HMM(object):
 		self.scalefactor=datatype.array(T,0)
 		self.pObsGivenModel=datatype.array(T)
 	def train(self,obs):
-		self.forward(obs)
-		self.backward(obs)
-		self.viterbi(obs)
-		self.update(obs)
+		for i in xrange(self.trainingIters):
+			self.forward(obs)
+			self.backward(obs)
+			self.viterbi(obs)
+			self.update(obs)
 	def getPState(self):
 		pState=datatype.array(self.M,0.0)
 		eState=self.getExpState()
@@ -276,8 +278,8 @@ class HMM(object):
 				self.A[i][j]=sumXi/sumGamma
 		self.updateB(obs)
 class GMM(HMM):
-	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
-		super(GMM,self).__init__(STATES,SYMBOLS,OBSERVATIONS)
+	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS):
+		super(GMM,self).__init__(STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS)
 		self.name='Gaussian Mixture Model'
 	def initB(self):
 		N=self.N

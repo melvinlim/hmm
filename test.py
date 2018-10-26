@@ -8,7 +8,7 @@ runEvent=threading.Event()
 STATES=3
 SYMBOLS=3
 MAXOBS=60
-UPDATES=20
+TRAININGITERS=20
 TESTOBS=MAXOBS/2
 NOISEVAR=0.5
 def inputHandler(records):
@@ -38,16 +38,15 @@ def inputHandler(records):
 def runTest(testIter,records):
 	mList=[]
 	mList.append(models.UniformRandom(0,SYMBOLS-1))
-	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS))
-	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS))
+	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS))
+	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS))
 	task=tasks.JarTask()
 	noisyObsList=[]
 	trueObsList=[]
 	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
 	noisyObs=noisyObsList[0]
-	for t in xrange(UPDATES):
-		for model in mList:
-			model.train(noisyObs)
+	for model in mList:
+		model.train(noisyObs)
 	noisyObsList.pop(0)
 	trueObsList.pop(0)
 	for model in mList:
@@ -66,8 +65,7 @@ def runTest(testIter,records):
 			details+='state:'+str(state)+'\t'
 			details+='predicted:'+str(prediction)+'\t'
 			details+='drew:'+str(o)+'\n'
-			for t in xrange(UPDATES):
-				model.train(noisyObs)
+			model.train(noisyObs)
 		record['models']=model
 		record['details']=details
 		record['correct']=correct
