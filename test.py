@@ -1,4 +1,3 @@
-import random
 import sys
 import hmm
 import myprint
@@ -6,7 +5,6 @@ import threading
 import tasks
 import models
 runEvent=threading.Event()
-TRIALS=5
 STATES=3
 SYMBOLS=3
 MAXOBS=60
@@ -38,46 +36,45 @@ def inputHandler(records):
 			for i in info:
 				print i
 def runTest(testIter,records):
-	for trial in xrange(TRIALS):
-		mList=[]
-		mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS))
-		mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS))
-		mList.append(models.UniformRandom(0,SYMBOLS-1))
-		task=tasks.JarTask()
-		noisyObsList=[]
-		trueObsList=[]
-		task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
-		noisyObs=noisyObsList[0]
-		for t in xrange(UPDATES):
-			for model in mList:
-				model.train(noisyObs)
-		noisyObsList.pop(0)
-		trueObsList.pop(0)
+	mList=[]
+	mList.append(models.UniformRandom(0,SYMBOLS-1))
+	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS))
+	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS))
+	task=tasks.JarTask()
+	noisyObsList=[]
+	trueObsList=[]
+	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
+	noisyObs=noisyObsList[0]
+	for t in xrange(UPDATES):
 		for model in mList:
-			record={}
-			correct=0
-			for t in xrange(TESTOBS):
-				if not runEvent.is_set():
-					return
-				details='test iter:'+str(t)+'\t'
-				(prediction,state)=model.predict()
-				noisyObs=noisyObsList[t]
-				trueObs=trueObsList[t]
-				o=trueObs[-1]
-				if o==prediction:
-					correct+=1
-				details+='state:'+str(state)+'\t'
-				details+='predicted:'+str(prediction)+'\t'
-				details+='drew:'+str(o)+'\n'
-				for t in xrange(UPDATES):
-					model.train(noisyObs)
-			record['models']=model
-			record['details']=details
-			record['correct']=correct
-			stats='[%s]\tcorrect/testobs=\t%d\t%d'%(model.name,record['correct'],TESTOBS)
-			record['stats']=stats
-			records.append(record)
-			print stats
+			model.train(noisyObs)
+	noisyObsList.pop(0)
+	trueObsList.pop(0)
+	for model in mList:
+		record={}
+		correct=0
+		for t in xrange(TESTOBS):
+			if not runEvent.is_set():
+				return
+			details='test iter:'+str(t)+'\t'
+			(prediction,state)=model.predict()
+			noisyObs=noisyObsList[t]
+			trueObs=trueObsList[t]
+			o=trueObs[-1]
+			if o==prediction:
+				correct+=1
+			details+='state:'+str(state)+'\t'
+			details+='predicted:'+str(prediction)+'\t'
+			details+='drew:'+str(o)+'\n'
+			for t in xrange(UPDATES):
+				model.train(noisyObs)
+		record['models']=model
+		record['details']=details
+		record['correct']=correct
+		stats='[%s]\tcorrect/testobs=\t%d\t%d'%(model.name,record['correct'],TESTOBS)
+		record['stats']=stats
+		records.append(record)
+		print stats
 	print 'finished test iteration #%d.  type q to exit.'%testIter
 	print record.keys()
 def main(argv):
