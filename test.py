@@ -68,28 +68,29 @@ def runTest(testIter,records):
 		stats=''
 		stats+='correct/testobs=\t%d\t%d\n'%(correct,TESTOBS)
 		stats+='random correct/testobs=\t%d\t%d\n'%(randomCorrect,TESTOBS)
-		predicted=model.info()
-		predictions.append(predicted)
-		pSymb=[]
+		print stats
+		predictedSymbFreq=model.info()
+		predictions.append(predictedSymbFreq)
+		symbFreq=[]
 		for i in xrange(SYMBOLS):
-			pSymb.append(0.0)
+			symbFreq.append(0.0)
 		total=0
 		for o in trueObs:
-			pSymb[o]+=1.0
+			symbFreq[o]+=1.0
 			total+=1.0
 		for t in xrange(SYMBOLS):
-			pSymb[t]/=total
-		print 'actual pSymb',
-		myprint.pprinta(pSymb)
-		probabilities.append(pSymb)
-		print 'obs:',
-		myprint.pprinta(noisyObs)
+			symbFreq[t]/=total
+		print 'actual symbFreq',
+		myprint.pprinta(symbFreq)
+		probabilities.append(symbFreq)
+#		print 'obs:',
+#		myprint.pprinta(noisyObs)
 		record['stats']=stats
 		record['details']=details
-#	print 'pred:',
-#	myprint.pprint(predictions)
-#	print 'prob:',
-#	myprint.pprint(probabilities)
+	print 'pred:',
+	myprint.pprint(predictions)
+	print 'prob:',
+	myprint.pprint(probabilities)
 	absError=0
 	for t in xrange(TRIALS):
 		for s in xrange(SYMBOLS):
