@@ -23,9 +23,6 @@ class CodeTable:
 		return self.tableProb[int(round(obs))]
 	def printParams(self):
 		myprint.pprinta(self.tableProb)
-#		for entry in self.tableProb:
-#			print '%.2e,'%entry,
-#		print
 	def update(self,i,newVal):
 		self.tableProb[i]=newVal
 class Gaussian:
@@ -306,13 +303,7 @@ class HMM:
 #					self._B[j][k]=gammaObsSymbVk/sumGamma
 					self._B[j].update(k,gammaObsSymbVk/sumGamma)
 	def B(self,state,obs):
-		if _1DGAUSS:
-			return self._B[state].value(obs)
-		elif _KDGAUSS:
-			return self._B[state].value(obs)
-		else:
-			#return self._B[state][int(round(obs))]
-			return self._B[state].value(obs)
+		return self._B[state].value(obs)
 	def update(self,obs):
 		N=self.N
 		M=self.M
