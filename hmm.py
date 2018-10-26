@@ -4,8 +4,6 @@ import math
 import datatype
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
-_KDGAUSS=True
-_KDGAUSS=False
 def randomizeMatrix(mat):
 	M=len(mat)
 	N=len(mat[0])
@@ -49,7 +47,7 @@ class Mixture:
 		for g in self.gaussians:
 			print '%.2e'%g.mu,
 		print
-class HMM:
+class HMM(object):
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
 		self.N=STATES
 		self.M=SYMBOLS
@@ -228,55 +226,25 @@ class HMM:
 	def initB(self):
 		N=self.N
 		M=self.M
-		if _KDGAUSS:
-			self._B=datatype.array(N)
-			for j in xrange(N):
-				mus=[]
-				sigmaSqs=[]
-				for k in xrange(M):
-					mu=k+0.1*j
-					sigmaSq=1.0
-					mus.append(mu)
-					sigmaSqs.append(sigmaSq)
-				self._B[j]=Mixture(mus,sigmaSqs)
-		else:
-			self._B=datatype.array(N)
-			for i in xrange(N):
-				self._B[i]=CodeTable(M)
+		self._B=datatype.array(N)
+		for i in xrange(N):
+			self._B[i]=CodeTable(M)
 	def updateB(self,obs):
 		N=self.N
 		M=self.M
 		T=self.T
 		for j in xrange(N):
-			if _KDGAUSS:
-				sumGammatjkTK=0
-				for k in xrange(M):
-					sumGammatjkT=0
-					gammatjkdotobs=0
-					for t in xrange(T):
-						gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
-						sumGammatjkT+=gammatjk
-						gammatjkdotobs+=gammatjk*obs[t]
-					if sumGammatjkT==0:
-						sumGammatjkT=1
-					self._B[j].c[k]=sumGammatjkT
-					self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
-					sumGammatjkTK+=sumGammatjkT
-				for k in xrange(M):
-					self._B[j].c[k]/=sumGammatjkTK
-			else:
-				for k in xrange(M):
-					gammaObsSymbVk=0
-					sumGamma=0
-					for t in xrange(T):
-						sumGamma+=self.gamma[t][j]
-						if int(round(obs[t]))==k:
-							gammaObsSymbVk+=self.gamma[t][j]
-					if PREVENTDIVIDEBYZERO:
-						if sumGamma==0:
-							sumGamma=0.5
-#					self._B[j][k]=gammaObsSymbVk/sumGamma
-					self._B[j].update(k,gammaObsSymbVk/sumGamma)
+			for k in xrange(M):
+				gammaObsSymbVk=0
+				sumGamma=0
+				for t in xrange(T):
+					sumGamma+=self.gamma[t][j]
+					if int(round(obs[t]))==k:
+						gammaObsSymbVk+=self.gamma[t][j]
+				if PREVENTDIVIDEBYZERO:
+					if sumGamma==0:
+						sumGamma=0.5
+				self._B[j].update(k,gammaObsSymbVk/sumGamma)
 	def B(self,state,obs):
 		return self._B[state].value(obs)
 	def update(self,obs):
@@ -305,3 +273,39 @@ class HMM:
 						sumGamma=0.5
 				self.A[i][j]=sumXi/sumGamma
 		self.updateB(obs)
+class GMM(HMM):
+	def __init__(self,STATES,SYMBOLS,OBSERVATIONS):
+		super(GMM,self).__init__(STATES,SYMBOLS,OBSERVATIONS)
+	def initB(self):
+		N=self.N
+		M=self.M
+		self._B=datatype.array(N)
+		for j in xrange(N):
+			mus=[]
+			sigmaSqs=[]
+			for k in xrange(M):
+				mu=k+0.1*j
+				sigmaSq=1.0
+				mus.append(mu)
+				sigmaSqs.append(sigmaSq)
+			self._B[j]=Mixture(mus,sigmaSqs)
+	def updateB(self,obs):
+		N=self.N
+		M=self.M
+		T=self.T
+		for j in xrange(N):
+			sumGammatjkTK=0
+			for k in xrange(M):
+				sumGammatjkT=0
+				gammatjkdotobs=0
+				for t in xrange(T):
+					gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
+					sumGammatjkT+=gammatjk
+					gammatjkdotobs+=gammatjk*obs[t]
+				if sumGammatjkT==0:
+					sumGammatjkT=1
+				self._B[j].c[k]=sumGammatjkT
+				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
+				sumGammatjkTK+=sumGammatjkT
+			for k in xrange(M):
+				self._B[j].c[k]/=sumGammatjkTK

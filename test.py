@@ -37,6 +37,7 @@ def runTest(testIter,records):
 		record={}
 		records.append(record)
 		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
+		model=hmm.GMM(STATES,SYMBOLS,OBSERVATIONS)
 		record['models']=model
 		task=tasks.JarTask()
 		noisyObs=[]
