@@ -4,6 +4,7 @@ import hmm
 import myprint
 import threading
 import tasks
+import model
 runEvent=threading.Event()
 TRIALS=5
 STATES=3
@@ -56,7 +57,7 @@ def runTest(testIter,records):
 			o=trueObs[-1]
 			if o==prediction:
 				correct+=1
-			if random.randint(0,SYMBOLS)==o:
+			if random.randint(0,SYMBOLS-1)==o:
 				randomCorrect+=1
 			details+='state:'+str(state)+'\t'
 			details+='predicted:'+str(prediction)+'\t'
