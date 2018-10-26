@@ -4,6 +4,7 @@ import hmm
 import myprint
 import threading
 import math
+import jars
 runEvent=threading.Event()
 infoEvent=threading.Event()
 statEvent=threading.Event()
@@ -15,38 +16,6 @@ OBSERVATIONS=60
 UPDATES=20
 TESTOBS=OBSERVATIONS/2
 NOISEVAR=0.5
-class Jar:
-	def __init__(self,l=[]):
-		self.list=l
-		self.n=len(l)
-	def put(self,x,n=1):
-		for i in range(n):
-			self.list.append(x)
-		self.n+=n
-	def draw(self,replace=True):
-		if self.n==0:
-			return
-		index=random.randint(0,self.n-1)
-		if not replace:
-			self.list.remove(index)
-		return self.list[index]
-class Jars:
-	def __init__(self):
-		self.list=[]
-		self.n=0
-		self.previousIndex=-1
-	def put(self,x):
-		self.list.append(x)
-		self.n+=1
-	def draw(self):
-		if self.n==0:
-			return
-		if self.previousIndex==0:
-			index=random.randint(0,self.n-2)
-		else:
-			index=random.randint(0,self.n-1)
-		self.previousIndex=index
-		return self.list[index].draw()
 def inputHandler():
 	while runEvent.is_set():
 		inp=raw_input()
@@ -69,14 +38,14 @@ def runTest(testIter):
 	probabilities=[]
 	for trial in xrange(TRIALS):
 		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
-		jars=Jars()
-		jars.put(Jar([1,1,1,1,1,1,1,1,0,1,1,0,0,0,2]))
-		jars.put(Jar([0,1,1,1,1,0,2,2]))
-		jars.put(Jar([0,2,2,2,1,2]))
+		_jars=jars.Jars()
+		_jars.put([1,1,1,1,1,1,1,1,0,1,1,0,0,0,2])
+		_jars.put([0,1,1,1,1,0,2,2])
+		_jars.put([0,2,2,2,1,2])
 		obs=[]
 		trueObs=[]
 		for i in xrange(OBSERVATIONS):
-			item=jars.draw()
+			item=_jars.draw()
 			trueObs.append(item)
 			obs.append(item+noise(0,NOISEVAR))
 		#model.info()
@@ -96,7 +65,7 @@ def runTest(testIter):
 				model.info()
 			stats+='test iter:'+str(t)+'\n'
 			(prediction,state)=model.predict()
-			o=jars.draw()
+			o=_jars.draw()
 			if o==prediction:
 				correct+=1
 			if random.randint(0,SYMBOLS)==o:
