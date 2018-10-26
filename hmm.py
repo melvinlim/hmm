@@ -303,14 +303,20 @@ class GMM(HMM):
 			for k in xrange(M):
 				sumGammatjkT=0
 				gammatjkdotobs=0
+				gammatjkdotsumSqDiff=0
 				for t in xrange(T):
 					gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
+					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
 				if sumGammatjkT==0:
 					sumGammatjkT=1
 				self._B[j].c[k]=sumGammatjkT
 				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
+				if sumGammatjkT>0.01:
+					self._B[j].gaussians[k].sigmaSq=gammatjkdotsumSqDiff/sumGammatjkT
+				else:
+					self._B[j].gaussians[k].sigmaSq=0.01
 				sumGammatjkTK+=sumGammatjkT
 			for k in xrange(M):
 				self._B[j].c[k]/=sumGammatjkTK
