@@ -5,7 +5,6 @@ import myprint
 import threading
 import tasks
 runEvent=threading.Event()
-infoEvent=threading.Event()
 TRIALS=5
 STATES=3
 SYMBOLS=3
@@ -21,7 +20,7 @@ def inputHandler(records):
 			if inp=='q':
 				runEvent.clear()
 			elif inp=='info':
-				infoEvent.set()
+				records[-1]['model'].info()
 			elif inp=='r':
 				runTest()
 			else:
@@ -53,9 +52,6 @@ def runTest(testIter,records):
 		for t in xrange(TESTOBS):
 			if not runEvent.is_set():
 				return
-			elif infoEvent.is_set():
-				infoEvent.clear()
-				model.info()
 			details+='test iter:'+str(t)+'\n'
 			(prediction,state)=model.predict()
 			o=task.draw()

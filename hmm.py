@@ -120,8 +120,6 @@ class HMM:
 		print 'PState =',
 		myprint.pprinta(pState)
 		pSymb=self.obsProb()
-		print 'pSymb =',
-		myprint.pprinta(pSymb)
 		T=self.T
 		tmp=self.delta[T-1][0]
 		maxArg=0
@@ -139,6 +137,8 @@ class HMM:
 		record.reverse()
 		print 'sta:',
 		print record
+		print 'pSymb =',
+		myprint.pprinta(pSymb)
 		return pSymb
 	def predict(self):
 		T=self.T
