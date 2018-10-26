@@ -5,7 +5,7 @@ import datatype
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-#_1DGAUSS=False
+_1DGAUSS=False
 _KDGAUSS=True
 _KDGAUSS=False
 def randomizeMatrix(mat):
@@ -14,6 +14,20 @@ def randomizeMatrix(mat):
 	for i in xrange(M):
 		for j in xrange(N):
 			mat[i][j]=random.randint(5,100)/100.0
+class CodeTable:
+	def __init__(self,M):
+		self.tableProb=datatype.array(M,1.0/M)
+		for i in xrange(M):
+			self.tableProb[i]=random.randint(5,100)/100.0
+	def value(self,obs):
+		return self.tableProb[int(round(obs))]
+	def printParams(self):
+		myprint.pprinta(self.tableProb)
+#		for entry in self.tableProb:
+#			print '%.2e,'%entry,
+#		print
+	def update(self,i,newVal):
+		self.tableProb[i]=newVal
 class Gaussian:
 	def __init__(self,mu,sigmaSq):
 		self.mu=mu
@@ -93,16 +107,12 @@ class HMM:
 			pSymb[j]/=norm
 		return pSymb
 	def info(self):
-		if _KDGAUSS or _1DGAUSS:
-			for x in self._B:
-				x.printParams()
+		for x in self._B:
+			x.printParams()
 		print 'pi =',
 		myprint.pprinta(self.pi)
 		print 'A =',
 		myprint.pprint(self.A)
-		if (not _1DGAUSS) and (not _KDGAUSS):
-			print 'B =',
-			myprint.pprint(self._B)
 #		print 'alpha =',
 #		myprint.pprint(self.alpha)
 #		print 'beta =',
@@ -117,7 +127,7 @@ class HMM:
 		print 'eState =',
 		myprint.pprinta(eState)
 		pState=self.getPState()
-		print 'PState =',
+		print 'pState =',
 		myprint.pprinta(pState)
 		pSymb=self.obsProb()
 		T=self.T
@@ -128,15 +138,15 @@ class HMM:
 				tmp=self.delta[T-1][i]
 				maxArg=i
 		t=T-1
-		record=[]
+		stateTrace=[]
 		while t>=0:
 #			print maxArg,
-			record.append(maxArg)
+			stateTrace.append(maxArg)
 			maxArg=self.psi[t][maxArg]
 			t-=1
-		record.reverse()
+		stateTrace.reverse()
 		print 'sta:',
-		print record
+		print stateTrace
 		print 'pSymb =',
 		myprint.pprinta(pSymb)
 		return pSymb
@@ -241,8 +251,9 @@ class HMM:
 					sigmaSqs.append(sigmaSq)
 				self._B[j]=Mixture(mus,sigmaSqs)
 		else:
-			self._B=datatype.matrix(N,M,1.0/N)
-			randomizeMatrix(self._B)
+			self._B=datatype.array(N)
+			for i in xrange(N):
+				self._B[i]=CodeTable(M)
 	def updateB(self,obs):
 		N=self.N
 		M=self.M
@@ -292,14 +303,16 @@ class HMM:
 					if PREVENTDIVIDEBYZERO:
 						if sumGamma==0:
 							sumGamma=0.5
-					self._B[j][k]=gammaObsSymbVk/sumGamma
+#					self._B[j][k]=gammaObsSymbVk/sumGamma
+					self._B[j].update(k,gammaObsSymbVk/sumGamma)
 	def B(self,state,obs):
 		if _1DGAUSS:
 			return self._B[state].value(obs)
 		elif _KDGAUSS:
 			return self._B[state].value(obs)
 		else:
-			return self._B[state][int(round(obs))]
+			#return self._B[state][int(round(obs))]
+			return self._B[state].value(obs)
 	def update(self,obs):
 		N=self.N
 		M=self.M
