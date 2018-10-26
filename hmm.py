@@ -3,7 +3,7 @@ import myprint
 import math
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-_1DGAUSS=False
+#_1DGAUSS=False
 _KDGAUSS=True
 _KDGAUSS=False
 def array(n,xi=0.0):
@@ -70,8 +70,9 @@ class HMM:
 		myprint.pprinta(self.pi)
 		print 'A =',
 		myprint.pprint(self.A)
-#		print 'B =',
-#		myprint.pprint(self.B)
+		if (not _1DGAUSS) and (not _KDGAUSS):
+			print 'B =',
+			myprint.pprint(self._B)
 #		print 'alpha =',
 #		myprint.pprint(self.alpha)
 #		print 'beta =',
@@ -221,50 +222,64 @@ class HMM:
 		M=self.M
 		T=self.T
 		for j in xrange(N):
-			#print j,
-			#self._B[j].params()
-			sumGammatjkTK=0
-			for k in xrange(M):
-				gammaObsSymbVk=0
-				gammaObsSymbVk2=0
-				sumGamma=0
-				sumGamma2=0
-				gammaVar=0
-				sumGammatjkT=0
-				gammatjkdotobs=0
-				for t in xrange(T):
-					if _KDGAUSS:
-						gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
-						sumGammatjkT+=gammatjk
-					sumGamma+=self.gamma[t][j]
-					if obs[t]==k:
-						gammaObsSymbVk+=self.gamma[t][j]
-						gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
-						sumGamma2+=self.gamma[t][j]
-						if _1DGAUSS:
+			if _1DGAUSS:
+				for k in xrange(M):
+					gammaObsSymbVk2=0
+					sumGamma2=0
+					gammaVar=0
+					sumGammatjkT=0
+					gammatjkdotobs=0
+					for t in xrange(T):
+						if obs[t]==k:
+							gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
+							sumGamma2+=self.gamma[t][j]
 							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
-						elif _KDGAUSS:
-							gammatjkdotobs+=gammatjk*obs[t]
-				if PREVENTDIVIDEBYZERO:
-					if sumGamma==0:
-						sumGamma=0.5
-				if _1DGAUSS:
-					self._B[j].mu=gammaObsSymbVk2/sumGamma2
+#					if PREVENTDIVIDEBYZERO:
+#						if sumGamma==0:
+#							sumGamma=0.5
 #					print self._B[j].mu
+					self._B[j].mu=gammaObsSymbVk2/sumGamma2
 					self._B[j].sigmaSq=gammaVar/sumGamma2
 					if self._B[j].sigmaSq<0.5:
 						self._B[j].sigmaSq=0.5
-				elif _KDGAUSS:
+			elif _KDGAUSS:
+				sumGammatjkTK=0
+				for k in xrange(M):
+					gammaObsSymbVk2=0
+					sumGamma2=0
+					gammaVar=0
+					sumGammatjkT=0
+					gammatjkdotobs=0
+					for t in xrange(T):
+						gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
+						sumGammatjkT+=gammatjk
+						sumGamma+=self.gamma[t][j]
+						if obs[t]==k:
+							gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
+							sumGamma2+=self.gamma[t][j]
+							gammatjkdotobs+=gammatjk*obs[t]
+					if PREVENTDIVIDEBYZERO:
+						if sumGamma==0:
+							sumGamma=0.5
 					if sumGammatjkT==0:
 						sumGammatjkT=1
 					self._B[j].c[k]=sumGammatjkT
 					self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
 					sumGammatjkTK+=sumGammatjkT
-				else:
-					self._B[j][k]=gammaObsSymbVk/sumGamma
-			if _KDGAUSS:
 				for k in xrange(M):
 					self._B[j].c[k]/=sumGammatjkTK
+			else:
+				for k in xrange(M):
+					gammaObsSymbVk=0
+					sumGamma=0
+					for t in xrange(T):
+						sumGamma+=self.gamma[t][j]
+						if obs[t]==k:
+							gammaObsSymbVk+=self.gamma[t][j]
+					if PREVENTDIVIDEBYZERO:
+						if sumGamma==0:
+							sumGamma=0.5
+					self._B[j][k]=gammaObsSymbVk/sumGamma
 	def B(self,state,obs):
 		if _1DGAUSS:
 			return self._B[state].value(obs)
