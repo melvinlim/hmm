@@ -39,17 +39,10 @@ def inputHandler(records):
 				print i
 def runTest(testIter,records):
 	for trial in xrange(TRIALS):
-		trialRecords={}
 		mList=[]
 		mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS))
 		mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS))
 		mList.append(models.UniformRandom(0,SYMBOLS-1))
-		for model in mList:
-			record={}
-			record['models']=model
-			record['details']=''
-			record['correct']=0
-			trialRecords[model]=record
 		task=tasks.JarTask()
 		noisyObsList=[]
 		trueObsList=[]
@@ -61,10 +54,11 @@ def runTest(testIter,records):
 		noisyObsList.pop(0)
 		trueObsList.pop(0)
 		for model in mList:
+			record={}
+			correct=0
 			for t in xrange(TESTOBS):
 				if not runEvent.is_set():
 					return
-				correct=0
 				details='test iter:'+str(t)+'\t'
 				(prediction,state)=model.predict()
 				noisyObs=noisyObsList[t]
@@ -77,12 +71,12 @@ def runTest(testIter,records):
 				details+='drew:'+str(o)+'\n'
 				for t in xrange(UPDATES):
 					model.train(noisyObs)
-				trialRecords[model]['details']+=details
-				trialRecords[model]['correct']+=correct
-		for model in mList:
-			stats='[%s] correct/testobs=\t%d\t%d'%(model.name,trialRecords[model]['correct'],TESTOBS)
-			trialRecords[model]['stats']=stats
-			records.append(trialRecords[model])
+			record['models']=model
+			record['details']=details
+			record['correct']=correct
+			stats='[%s]\tcorrect/testobs=\t%d\t%d'%(model.name,record['correct'],TESTOBS)
+			record['stats']=stats
+			records.append(record)
 			print stats
 	print 'finished test iteration #%d.  type q to exit.'%testIter
 	print record.keys()
