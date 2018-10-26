@@ -3,9 +3,9 @@ import myprint
 import math
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-_1DGAUSS=False
+#_1DGAUSS=False
 _KDGAUSS=True
-#_KDGAUSS=False
+_KDGAUSS=False
 def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0.0):
@@ -257,9 +257,9 @@ class HMM:
 #							sumGamma=0.5
 #					print self._B[j].mu
 					self._B[j].mu=gammaObsSymbVk2/sumGamma2
-					self._B[j].sigmaSq=gammaVar/sumGamma2
-					if self._B[j].sigmaSq<0.5:
-						self._B[j].sigmaSq=0.5
+#					self._B[j].sigmaSq=gammaVar/sumGamma2
+#					if self._B[j].sigmaSq<0.5:
+#						self._B[j].sigmaSq=0.5
 			elif _KDGAUSS:
 				sumGammatjkTK=0
 				for k in xrange(M):
