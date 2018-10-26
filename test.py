@@ -20,7 +20,7 @@ def inputHandler(records):
 			if inp=='q':
 				runEvent.clear()
 			elif inp=='info':
-				records[-1]['model'].info()
+				records[-1]['models'].info()
 			elif inp=='r':
 				runTest()
 			else:
@@ -33,13 +33,11 @@ def inputHandler(records):
 			for i in info:
 				print i
 def runTest(testIter,records):
-	predictions=[]
-	probabilities=[]
 	for trial in xrange(TRIALS):
 		record={}
 		records.append(record)
 		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
-		record['model']=model
+		record['models']=model
 		task=tasks.JarTask()
 		noisyObs=[]
 		trueObs=[]
@@ -68,35 +66,10 @@ def runTest(testIter,records):
 		stats=''
 		stats+='correct/testobs=\t%d\t%d\n'%(correct,TESTOBS)
 		stats+='random correct/testobs=\t%d\t%d\n'%(randomCorrect,TESTOBS)
-		print stats
-		predictedSymbFreq=model.info()
-		predictions.append(predictedSymbFreq)
-		symbFreq=[]
-		for i in xrange(SYMBOLS):
-			symbFreq.append(0.0)
-		total=0
-		for o in trueObs:
-			symbFreq[o]+=1.0
-			total+=1.0
-		for t in xrange(SYMBOLS):
-			symbFreq[t]/=total
-		print 'actual symbFreq',
-		myprint.pprinta(symbFreq)
-		probabilities.append(symbFreq)
-#		print 'obs:',
-#		myprint.pprinta(noisyObs)
 		record['stats']=stats
 		record['details']=details
-	print 'pred:',
-	myprint.pprint(predictions)
-	print 'prob:',
-	myprint.pprint(probabilities)
-	absError=0
-	for t in xrange(TRIALS):
-		for s in xrange(SYMBOLS):
-			absError+=abs(predictions[t][s]-probabilities[t][s])
-	print 'absError:',absError*1.0/TRIALS
 	print 'finished test iteration #%d.  type q to exit.'%testIter
+	print record.keys()
 def main(argv):
 	records=[]
 	runEvent.set()
