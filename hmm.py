@@ -1,18 +1,13 @@
 import random
 import myprint
 import math
+import datatype
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-_1DGAUSS=False
+#_1DGAUSS=False
 _KDGAUSS=True
 _KDGAUSS=False
-def array(n,xi=0.0):
-	return [xi for _ in xrange(n)]
-def matrix(m,n,xi=0.0):
-	return [[xi for _ in xrange(n)] for _ in xrange(m)]
-def tensor(i,j,k,xi=0.0):
-	return [[[xi for _ in xrange(k)] for _ in xrange(j)] for _ in xrange(i)]
 def randomizeMatrix(mat):
 	M=len(mat)
 	N=len(mat[0])
@@ -31,7 +26,7 @@ class Mixture:
 	def __init__(self,mus,sigmaSqs):
 		m=len(mus)
 		self.M=m
-		self.c=array(m,1.0/m)
+		self.c=datatype.array(m,1.0/m)
 		self.gaussians=[]
 		for i in xrange(self.M):
 			self.gaussians.append(Gaussian(mus[i],sigmaSqs[i]))
@@ -53,40 +48,40 @@ class HMM:
 		N=self.N
 		M=self.M
 		T=self.T
-		self.A=matrix(N,N,1.0/STATES)
+		self.A=datatype.matrix(N,N,1.0/STATES)
 		self.initB()
-		self.pi=array(N,1.0/STATES)
-		self.alpha=matrix(T,N)
-		self.beta=matrix(T,N)
-		self.alphaBar=matrix(T,N)
-		self.betaBar=matrix(T,N)
-		self.alphaHat=matrix(T,N)
-		self.betaHat=matrix(T,N)
-		self.delta=matrix(T,N)
-		self.psi=matrix(T,N)
-		self.xi=tensor(T,N,N)
-		self.gamma=matrix(T,N)
-		self.scalefactor=array(T,0)
-		self.pObsGivenModel=array(T)
+		self.pi=datatype.array(N,1.0/STATES)
+		self.alpha=datatype.matrix(T,N)
+		self.beta=datatype.matrix(T,N)
+		self.alphaBar=datatype.matrix(T,N)
+		self.betaBar=datatype.matrix(T,N)
+		self.alphaHat=datatype.matrix(T,N)
+		self.betaHat=datatype.matrix(T,N)
+		self.delta=datatype.matrix(T,N)
+		self.psi=datatype.matrix(T,N)
+		self.xi=datatype.tensor(T,N,N)
+		self.gamma=datatype.matrix(T,N)
+		self.scalefactor=datatype.array(T,0)
+		self.pObsGivenModel=datatype.array(T)
 	def train(self,obs):
 		self.forward(obs)
 		self.backward(obs)
 		self.viterbi(obs)
 		self.update(obs)
 	def getPState(self):
-		pState=array(self.M,0.0)
+		pState=datatype.array(self.M,0.0)
 		eState=self.getExpState()
 		for s in xrange(self.N):
 			pState[s]=eState[s]/self.T
 		return pState
 	def getExpState(self):
-		expState=array(self.M,0.0)
+		expState=datatype.array(self.M,0.0)
 		for j in xrange(self.M):
 			for t in xrange(self.T):
 				expState[j]+=self.gamma[t][j]
 		return expState
 	def obsProb(self):
-		pSymb=array(self.M,0.0)
+		pSymb=datatype.array(self.M,0.0)
 		for j in xrange(self.M):
 			for i in xrange(self.N):
 				pSymb[j]+=self.B(i,j)
@@ -229,13 +224,13 @@ class HMM:
 		N=self.N
 		M=self.M
 		if _1DGAUSS:
-			self._B=array(N)
+			self._B=datatype.array(N)
 			for i in xrange(N):
 				mu=i+0.1
 				sigmaSq=1.0
 				self._B[i]=Gaussian(mu,sigmaSq)
 		elif _KDGAUSS:
-			self._B=array(N)
+			self._B=datatype.array(N)
 			for j in xrange(N):
 				mus=[]
 				sigmaSqs=[]
@@ -246,7 +241,7 @@ class HMM:
 					sigmaSqs.append(sigmaSq)
 				self._B[j]=Mixture(mus,sigmaSqs)
 		else:
-			self._B=matrix(N,M,1.0/N)
+			self._B=datatype.matrix(N,M,1.0/N)
 			randomizeMatrix(self._B)
 	def updateB(self,obs):
 		N=self.N
