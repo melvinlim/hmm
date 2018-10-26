@@ -4,6 +4,7 @@ import myprint
 import threading
 import tasks
 import models
+import time
 runEvent=threading.Event()
 STATES=3
 SYMBOLS=3
@@ -48,6 +49,7 @@ def runTest(testIter,records):
 		record={}
 		correct=0
 		noisyObs=noisyObsList[0]
+		startTime=time.clock()
 		for t in xrange(TESTOBS):
 			if not runEvent.is_set():
 				return
@@ -66,7 +68,10 @@ def runTest(testIter,records):
 		record['details']=details
 		record['correct']=correct
 		stats='[%s]\tcorrect/testobs=\t%d\t%d'%(model.name,record['correct'],TESTOBS)
+		stats+='\t%f'%(time.clock()-startTime)
 		record['stats']=stats
+		record['gmtime']=time.gmtime()
+		record['time']=time.time()
 		records.append(record)
 		print stats
 	print 'finished test iteration #%d.  type q to exit.'%testIter
