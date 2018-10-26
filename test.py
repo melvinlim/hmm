@@ -4,7 +4,7 @@ import hmm
 import myprint
 import threading
 import tasks
-import model
+import models
 runEvent=threading.Event()
 TRIALS=5
 STATES=3
@@ -38,6 +38,7 @@ def runTest(testIter,records):
 		records.append(record)
 		model=hmm.HMM(STATES,SYMBOLS,MAXOBS)
 		model=hmm.GMM(STATES,SYMBOLS,MAXOBS)
+		model=models.UniformRandom(0,SYMBOLS-1)
 		record['models']=model
 		task=tasks.JarTask()
 		noisyObs=[]
