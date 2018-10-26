@@ -4,7 +4,7 @@ import math
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-#_1DGAUSS=False
+_1DGAUSS=False
 _KDGAUSS=True
 _KDGAUSS=False
 def array(n,xi=0.0):
@@ -93,8 +93,9 @@ class HMM:
 			pSymb[j]/=norm
 		return pSymb
 	def info(self):
-		for x in self._B:
-			x.printParams()
+		if _KDGAUSS or _1DGAUSS:
+			for x in self._B:
+				x.printParams()
 		print 'pi =',
 		myprint.pprinta(self.pi)
 		print 'A =',
@@ -286,7 +287,7 @@ class HMM:
 					sumGamma=0
 					for t in xrange(T):
 						sumGamma+=self.gamma[t][j]
-						if obs[t]==k:
+						if int(round(obs[t]))==k:
 							gammaObsSymbVk+=self.gamma[t][j]
 					if PREVENTDIVIDEBYZERO:
 						if sumGamma==0:
@@ -298,7 +299,7 @@ class HMM:
 		elif _KDGAUSS:
 			return self._B[state].value(obs)
 		else:
-			return self._B[state][obs]
+			return self._B[state][int(round(obs))]
 	def update(self,obs):
 		N=self.N
 		M=self.M
