@@ -24,6 +24,8 @@ class Gaussian:
 		self.sigmaSq=sigmaSq
 	def value(self,obs):
 		return math.exp(-0.5*(obs-self.mu)**2/self.sigmaSq)/(math.sqrt(2*math.pi*self.sigmaSq))
+	def printParams(self):
+		print '%.2e'%self.mu
 class Mixture:
 	def __init__(self,mus,sigmaSqs):
 		m=len(mus)
@@ -37,7 +39,7 @@ class Mixture:
 		for m in xrange(self.M):
 			val+=self.c[m]*self.gaussians[m].value(obs)
 		return val
-	def params(self):
+	def printParams(self):
 		myprint.pprinta(self.c)
 		for g in self.gaussians:
 			print '%.2e'%g.mu,
@@ -90,6 +92,8 @@ class HMM:
 			pSymb[j]/=norm
 		return pSymb
 	def info(self):
+#		for x in self._B:
+#			x.printParams()
 		print 'pi =',
 		myprint.pprinta(self.pi)
 		print 'A =',
@@ -220,7 +224,7 @@ class HMM:
 		if _1DGAUSS:
 			self._B=array(N)
 			for i in xrange(N):
-				mu=i
+				mu=i+0.1
 				sigmaSq=1.0
 				self._B[i]=Gaussian(mu,sigmaSq)
 		elif _KDGAUSS:
@@ -248,7 +252,7 @@ class HMM:
 					sumGamma2=0
 					gammaVar=0
 					for t in xrange(T):
-						if obs[t]==k:
+#						if obs[t]==k:
 							gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
 							sumGamma2+=self.gamma[t][j]
 							gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
