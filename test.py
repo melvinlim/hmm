@@ -8,10 +8,9 @@ runEvent=threading.Event()
 TRIALS=5
 STATES=3
 SYMBOLS=3
-OBSERVATIONS=50
-OBSERVATIONS=60
+MAXOBS=60
 UPDATES=20
-TESTOBS=OBSERVATIONS/2
+TESTOBS=MAXOBS/2
 NOISEVAR=0.5
 def inputHandler(records):
 	while runEvent.is_set():
@@ -36,13 +35,13 @@ def runTest(testIter,records):
 	for trial in xrange(TRIALS):
 		record={}
 		records.append(record)
-		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
-		model=hmm.GMM(STATES,SYMBOLS,OBSERVATIONS)
+		model=hmm.HMM(STATES,SYMBOLS,MAXOBS)
+		model=hmm.GMM(STATES,SYMBOLS,MAXOBS)
 		record['models']=model
 		task=tasks.JarTask()
 		noisyObs=[]
 		trueObs=[]
-		task.getNoisy(OBSERVATIONS,0,NOISEVAR,trueObs,noisyObs)
+		task.getNoisy(MAXOBS,0,NOISEVAR,trueObs,noisyObs)
 		for t in xrange(UPDATES):
 			model.train(noisyObs)
 		correct=0
@@ -51,17 +50,17 @@ def runTest(testIter,records):
 		for t in xrange(TESTOBS):
 			if not runEvent.is_set():
 				return
-			details+='test iter:'+str(t)+'\n'
+			details+='test iter:'+str(t)+'\t'
 			(prediction,state)=model.predict()
-			o=task.draw()
+			task.getSingleNoisy(0,NOISEVAR,trueObs,noisyObs)
+			o=trueObs[-1]
 			if o==prediction:
 				correct+=1
 			if random.randint(0,SYMBOLS)==o:
 				randomCorrect+=1
-			details+='state:'+str(state)+'\n'
-			details+='predicted:'+str(prediction)+'\n'
+			details+='state:'+str(state)+'\t'
+			details+='predicted:'+str(prediction)+'\t'
 			details+='drew:'+str(o)+'\n'
-			task.getSingleNoisy(0,NOISEVAR,trueObs,noisyObs)
 			for t in xrange(UPDATES):
 				model.train(noisyObs)
 		stats=''
