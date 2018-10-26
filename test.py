@@ -4,7 +4,7 @@ import hmm
 import myprint
 import threading
 import math
-import jars
+import tasks
 runEvent=threading.Event()
 infoEvent=threading.Event()
 statEvent=threading.Event()
@@ -38,14 +38,11 @@ def runTest(testIter):
 	probabilities=[]
 	for trial in xrange(TRIALS):
 		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
-		_jars=jars.Jars()
-		_jars.put([1,1,1,1,1,1,1,1,0,1,1,0,0,0,2])
-		_jars.put([0,1,1,1,1,0,2,2])
-		_jars.put([0,2,2,2,1,2])
+		task=tasks.JarTask()
 		obs=[]
 		trueObs=[]
 		for i in xrange(OBSERVATIONS):
-			item=_jars.draw()
+			item=task.draw()
 			trueObs.append(item)
 			obs.append(item+noise(0,NOISEVAR))
 		#model.info()
@@ -65,7 +62,7 @@ def runTest(testIter):
 				model.info()
 			stats+='test iter:'+str(t)+'\n'
 			(prediction,state)=model.predict()
-			o=_jars.draw()
+			o=task.draw()
 			if o==prediction:
 				correct+=1
 			if random.randint(0,SYMBOLS)==o:
