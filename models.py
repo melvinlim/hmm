@@ -4,6 +4,8 @@ class Model(object):
 		pass
 	def train(self,obs):
 		pass
+	def info(self):
+		pass
 class UniformRandom(Model):
 	def __init__(self,a,b):
 		self.a=a
