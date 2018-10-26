@@ -51,22 +51,24 @@ def runTest(testIter,records):
 			record['correct']=0
 			trialRecords[model]=record
 		task=tasks.JarTask()
-		noisyObs=[]
-		trueObs=[]
-		task.getNoisy(MAXOBS,0,NOISEVAR,trueObs,noisyObs)
+		noisyObsList=[]
+		trueObsList=[]
+		task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
+		noisyObs=noisyObsList[0]
 		for t in xrange(UPDATES):
 			for model in mList:
 				model.train(noisyObs)
-		correct=0
-		randomCorrect=0
-		for t in xrange(TESTOBS):
-			if not runEvent.is_set():
-				return
-			for model in mList:
+		noisyObsList.pop(0)
+		trueObsList.pop(0)
+		for model in mList:
+			for t in xrange(TESTOBS):
+				if not runEvent.is_set():
+					return
 				correct=0
 				details='test iter:'+str(t)+'\t'
 				(prediction,state)=model.predict()
-				task.getSingleNoisy(0,NOISEVAR,trueObs,noisyObs)
+				noisyObs=noisyObsList[t]
+				trueObs=trueObsList[t]
 				o=trueObs[-1]
 				if o==prediction:
 					correct+=1
@@ -78,7 +80,7 @@ def runTest(testIter,records):
 				trialRecords[model]['details']+=details
 				trialRecords[model]['correct']+=correct
 		for model in mList:
-			stats='[%s] correct/testobs=\t%d\t%d\n'%(model.name,trialRecords[model]['correct'],TESTOBS)
+			stats='[%s] correct/testobs=\t%d\t%d'%(model.name,trialRecords[model]['correct'],TESTOBS)
 			trialRecords[model]['stats']=stats
 			records.append(trialRecords[model])
 			print stats

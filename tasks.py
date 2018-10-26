@@ -1,6 +1,7 @@
 import jars
 import random
 import math
+import copy
 class Task:
 	def __init__(self):
 		x=1
@@ -12,6 +13,18 @@ class JarTask(Task):
 		self.jars.put([0,2,2,2,1,2])
 	def draw(self):
 		return self.jars.draw()
+	def getNoisyTasks(self,maxObs,nTasks,mean,var,trueObsList,noisyObsList):
+		trueObs=[]
+		noisyObs=[]
+		self.getNoisy(maxObs,mean,var,trueObs,noisyObs)
+		trueObsList.append(trueObs)
+		noisyObsList.append(noisyObs)
+		for t in xrange(nTasks):
+			trueObs=copy.deepcopy(trueObs)
+			noisyObs=copy.deepcopy(noisyObs)
+			self.getSingleNoisy(mean,var,trueObs,noisyObs)
+			trueObsList.append(trueObs)
+			noisyObsList.append(noisyObs)
 	def getNoisy(self,nObs,mean,var,trueObs,noisyObs):
 		for o in xrange(nObs):
 			trueObs.append(self.draw())
