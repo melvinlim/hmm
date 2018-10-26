@@ -3,9 +3,9 @@ import myprint
 import math
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-#_1DGAUSS=False
+_1DGAUSS=False
 _KDGAUSS=True
-_KDGAUSS=False
+#_KDGAUSS=False
 def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0.0):
@@ -65,6 +65,30 @@ class HMM:
 		self.gamma=matrix(T,N)
 		self.scalefactor=array(T,0)
 		self.pObsGivenModel=array(T)
+	def getPState(self):
+		pState=array(self.M,0.0)
+		eState=self.getExpState()
+		for s in xrange(self.N):
+			pState[s]=eState[s]/self.T
+		return pState
+	def getExpState(self):
+		expState=array(self.M,0.0)
+		for j in xrange(self.M):
+			for t in xrange(self.T):
+				expState[j]+=self.gamma[t][j]
+		return expState
+	def obsProb(self):
+		pSymb=array(self.M,0.0)
+		for j in xrange(self.M):
+			for i in xrange(self.N):
+				pSymb[j]+=self.B(i,j)
+		norm=sum(pSymb)
+		if PREVENTDIVIDEBYZERO:
+			if norm==0:
+				norm=1
+		for j in xrange(self.M):
+			pSymb[j]/=norm
+		return pSymb
 	def info(self):
 		print 'pi =',
 		myprint.pprinta(self.pi)
@@ -83,17 +107,13 @@ class HMM:
 #		myprint.pprint(self.psi)
 #		print 'scalefactor =',
 #		myprint.pprinta(self.scalefactor)
-		pSymb=array(self.M,0.0)
-		for j in xrange(self.M):
-			for i in xrange(self.N):
-				#pSymb[j]+=self.B[i][j]
-				pSymb[j]+=self.B(i,j)
-		norm=sum(pSymb)
-		if PREVENTDIVIDEBYZERO:
-			if norm==0:
-				norm=1
-		for j in xrange(self.M):
-			pSymb[j]/=norm
+		eState=self.getExpState()
+		print 'eState =',
+		myprint.pprinta(eState)
+		pState=self.getPState()
+		print 'PState =',
+		myprint.pprinta(pState)
+		pSymb=self.obsProb()
 		print 'pSymb =',
 		myprint.pprinta(pSymb)
 		T=self.T
@@ -227,8 +247,6 @@ class HMM:
 					gammaObsSymbVk2=0
 					sumGamma2=0
 					gammaVar=0
-					sumGammatjkT=0
-					gammatjkdotobs=0
 					for t in xrange(T):
 						if obs[t]==k:
 							gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
@@ -245,22 +263,13 @@ class HMM:
 			elif _KDGAUSS:
 				sumGammatjkTK=0
 				for k in xrange(M):
-					gammaObsSymbVk2=0
-					sumGamma2=0
-					gammaVar=0
 					sumGammatjkT=0
 					gammatjkdotobs=0
 					for t in xrange(T):
-						gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
-						sumGammatjkT+=gammatjk
-						sumGamma+=self.gamma[t][j]
 						if obs[t]==k:
-							gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
-							sumGamma2+=self.gamma[t][j]
+							gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
+							sumGammatjkT+=gammatjk
 							gammatjkdotobs+=gammatjk*obs[t]
-					if PREVENTDIVIDEBYZERO:
-						if sumGamma==0:
-							sumGamma=0.5
 					if sumGammatjkT==0:
 						sumGammatjkT=1
 					self._B[j].c[k]=sumGammatjkT
