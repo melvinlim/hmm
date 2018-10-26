@@ -3,7 +3,6 @@ import sys
 import hmm
 import myprint
 import threading
-import math
 import tasks
 runEvent=threading.Event()
 infoEvent=threading.Event()
@@ -33,27 +32,17 @@ def inputHandler():
 			print 'exception:'
 			for i in info:
 				print i
-def noise(mean,var):
-	if var==0:
-		return 0
-	x=random.randint(0,1000)/1000.0
-	n=math.exp(-0.5*(x-0.5)**2/var)/(2*math.pi*var)
-	return n-0.5
 def runTest(testIter):
 	predictions=[]
 	probabilities=[]
 	for trial in xrange(TRIALS):
 		model=hmm.HMM(STATES,SYMBOLS,OBSERVATIONS)
 		task=tasks.JarTask()
-		obs=[]
+		noisyObs=[]
 		trueObs=[]
-		for i in xrange(OBSERVATIONS):
-			item=task.draw()
-			trueObs.append(item)
-			obs.append(item+noise(0,NOISEVAR))
-		#model.info()
+		task.getNoisy(OBSERVATIONS,0,NOISEVAR,trueObs,noisyObs)
 		for t in xrange(UPDATES):
-			model.train(obs)
+			model.train(noisyObs)
 		correct=0
 		randomCorrect=0
 		stats=''
@@ -76,12 +65,9 @@ def runTest(testIter):
 			stats+='state:'+str(state)+'\n'
 			stats+='predicted:'+str(prediction)+'\n'
 			stats+='drew:'+str(o)+'\n'
-			trueObs.pop(0)
-			obs.pop(0)
-			trueObs.append(o)
-			obs.append(o+noise(0,NOISEVAR))
+			task.getSingleNoisy(0,NOISEVAR,trueObs,noisyObs)
 			for t in xrange(UPDATES):
-				model.train(obs)
+				model.train(noisyObs)
 		print 'correct/testobs=',correct,TESTOBS
 		print 'random correct/testobs=',randomCorrect,TESTOBS
 		predicted=model.info()
@@ -99,7 +85,7 @@ def runTest(testIter):
 		myprint.pprinta(pSymb)
 		probabilities.append(pSymb)
 		print 'obs:',
-		myprint.pprinta(obs)
+		myprint.pprinta(noisyObs)
 #	print 'pred:',
 #	myprint.pprint(predictions)
 #	print 'prob:',
@@ -112,7 +98,7 @@ def runTest(testIter):
 	print 'finished test iteration #%d.  type q to exit.'%testIter
 def main(argv):
 	runEvent.set()
-	inpHand=threading.Thread(None,inputHandler)
+	inpHand=threading.Thread(None,inputHandler,'inputHandler')
 	inpHand.start()
 	i=1
 	while runEvent.is_set():
