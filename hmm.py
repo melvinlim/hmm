@@ -1,11 +1,12 @@
 import random
 import myprint
 import math
+MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 _1DGAUSS=True
-_1DGAUSS=False
+#_1DGAUSS=False
 _KDGAUSS=True
-#_KDGAUSS=False
+_KDGAUSS=False
 def array(n,xi=0.0):
 	return [xi for _ in xrange(n)]
 def matrix(m,n,xi=0.0):
@@ -25,7 +26,7 @@ class Gaussian:
 	def value(self,obs):
 		return math.exp(-0.5*(obs-self.mu)**2/self.sigmaSq)/(math.sqrt(2*math.pi*self.sigmaSq))
 	def printParams(self):
-		print '%.2e'%self.mu
+		print '%.2e,%.2e'%(self.mu,self.sigmaSq)
 class Mixture:
 	def __init__(self,mus,sigmaSqs):
 		m=len(mus)
@@ -92,8 +93,8 @@ class HMM:
 			pSymb[j]/=norm
 		return pSymb
 	def info(self):
-#		for x in self._B:
-#			x.printParams()
+		for x in self._B:
+			x.printParams()
 		print 'pi =',
 		myprint.pprinta(self.pi)
 		print 'A =',
@@ -260,9 +261,9 @@ class HMM:
 #							sumGamma=0.5
 #					print self._B[j].mu
 					self._B[j].mu=gammaObsSymbVk2/sumGamma2
-#					self._B[j].sigmaSq=gammaVar/sumGamma2
-#					if self._B[j].sigmaSq<0.5:
-#						self._B[j].sigmaSq=0.5
+					self._B[j].sigmaSq=gammaVar/sumGamma2
+					if self._B[j].sigmaSq<MINVAR:
+						self._B[j].sigmaSq=MINVAR
 			elif _KDGAUSS:
 				sumGammatjkTK=0
 				for k in xrange(M):

@@ -3,6 +3,7 @@ import sys
 import hmm
 import myprint
 import threading
+import math
 runEvent=threading.Event()
 infoEvent=threading.Event()
 statEvent=threading.Event()
@@ -13,6 +14,7 @@ OBSERVATIONS=50
 OBSERVATIONS=60
 UPDATES=20
 TESTOBS=OBSERVATIONS/2
+NOISEVAR=0.5
 class Jar:
 	def __init__(self,l=[]):
 		self.list=l
@@ -56,6 +58,12 @@ def inputHandler():
 			statEvent.set()
 		elif inp=='r':
 			runTest()
+def noise(mean,var):
+	if var==0:
+		return 0
+	x=random.randint(0,1000)/1000.0
+	n=math.exp(-0.5*(x-0.5)**2/var)/(2*math.pi*var)
+	return n-0.5
 def runTest(testIter):
 	predictions=[]
 	probabilities=[]
@@ -66,8 +74,11 @@ def runTest(testIter):
 		jars.put(Jar([0,1,1,1,1,0,2,2]))
 		jars.put(Jar([0,2,2,2,1,2]))
 		obs=[]
+		trueObs=[]
 		for i in xrange(OBSERVATIONS):
-			obs.append(jars.draw())
+			item=jars.draw()
+			trueObs.append(item)
+			obs.append(item+noise(0,NOISEVAR))
 		#model.info()
 		for t in xrange(UPDATES):
 			model.forward(obs)
@@ -96,8 +107,10 @@ def runTest(testIter):
 			stats+='state:'+str(state)+'\n'
 			stats+='predicted:'+str(prediction)+'\n'
 			stats+='drew:'+str(o)+'\n'
+			trueObs.pop(0)
 			obs.pop(0)
-			obs.append(o)
+			trueObs.append(o)
+			obs.append(o+noise(0,NOISEVAR))
 			for t in xrange(UPDATES):
 				model.forward(obs)
 				model.backward(obs)
@@ -111,16 +124,16 @@ def runTest(testIter):
 		for i in xrange(SYMBOLS):
 			pSymb.append(0.0)
 		total=0
-		for o in obs:
+		for o in trueObs:
 			pSymb[o]+=1.0
 			total+=1.0
 		for t in xrange(SYMBOLS):
 			pSymb[t]/=total
 		print 'actual pSymb',
-		print pSymb
+		myprint.pprinta(pSymb)
 		probabilities.append(pSymb)
 		print 'obs:',
-		print obs
+		myprint.pprinta(obs)
 #	print 'pred:',
 #	myprint.pprint(predictions)
 #	print 'prob:',
