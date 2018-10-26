@@ -19,14 +19,20 @@ NOISEVAR=0.5
 def inputHandler():
 	while runEvent.is_set():
 		inp=raw_input()
-		if inp=='q':
-			runEvent.clear()
-		elif inp=='info':
-			infoEvent.set()
-		elif inp=='stat':
-			statEvent.set()
-		elif inp=='r':
-			runTest()
+		try:
+			if inp=='q':
+				runEvent.clear()
+			elif inp=='info':
+				infoEvent.set()
+			elif inp=='stat':
+				statEvent.set()
+			elif inp=='r':
+				runTest()
+		except:
+			info=sys.exc_info()
+			print 'exception:'
+			for i in info:
+				print i
 def noise(mean,var):
 	if var==0:
 		return 0
