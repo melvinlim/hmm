@@ -68,6 +68,11 @@ class HMM:
 		self.gamma=matrix(T,N)
 		self.scalefactor=array(T,0)
 		self.pObsGivenModel=array(T)
+	def train(self,obs):
+		self.forward(obs)
+		self.backward(obs)
+		self.viterbi(obs)
+		self.update(obs)
 	def getPState(self):
 		pState=array(self.M,0.0)
 		eState=self.getExpState()

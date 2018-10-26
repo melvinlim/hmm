@@ -81,10 +81,7 @@ def runTest(testIter):
 			obs.append(item+noise(0,NOISEVAR))
 		#model.info()
 		for t in xrange(UPDATES):
-			model.forward(obs)
-			model.backward(obs)
-			model.viterbi(obs)
-			model.update(obs)
+			model.train(obs)
 		correct=0
 		randomCorrect=0
 		stats=''
@@ -112,10 +109,7 @@ def runTest(testIter):
 			trueObs.append(o)
 			obs.append(o+noise(0,NOISEVAR))
 			for t in xrange(UPDATES):
-				model.forward(obs)
-				model.backward(obs)
-				model.viterbi(obs)
-				model.update(obs)
+				model.train(obs)
 		print 'correct/testobs=',correct,TESTOBS
 		print 'random correct/testobs=',randomCorrect,TESTOBS
 		predicted=model.info()
