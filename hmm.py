@@ -4,8 +4,6 @@ import math
 import datatype
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
-_1DGAUSS=True
-_1DGAUSS=False
 _KDGAUSS=True
 _KDGAUSS=False
 def randomizeMatrix(mat):
@@ -230,13 +228,7 @@ class HMM:
 	def initB(self):
 		N=self.N
 		M=self.M
-		if _1DGAUSS:
-			self._B=datatype.array(N)
-			for i in xrange(N):
-				mu=i+0.1
-				sigmaSq=1.0
-				self._B[i]=Gaussian(mu,sigmaSq)
-		elif _KDGAUSS:
+		if _KDGAUSS:
 			self._B=datatype.array(N)
 			for j in xrange(N):
 				mus=[]
@@ -256,24 +248,7 @@ class HMM:
 		M=self.M
 		T=self.T
 		for j in xrange(N):
-			if _1DGAUSS:
-				for k in xrange(M):
-					gammaObsSymbVk2=0
-					sumGamma2=0
-					gammaVar=0
-					for t in xrange(T):
-						gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
-						sumGamma2+=self.gamma[t][j]
-						gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
-#					if PREVENTDIVIDEBYZERO:
-#						if sumGamma==0:
-#							sumGamma=0.5
-#					print self._B[j].mu
-					self._B[j].mu=gammaObsSymbVk2/sumGamma2
-					self._B[j].sigmaSq=gammaVar/sumGamma2
-					if self._B[j].sigmaSq<MINVAR:
-						self._B[j].sigmaSq=MINVAR
-			elif _KDGAUSS:
+			if _KDGAUSS:
 				sumGammatjkTK=0
 				for k in xrange(M):
 					sumGammatjkT=0
