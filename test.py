@@ -44,18 +44,15 @@ def runTest(testIter,records):
 	noisyObsList=[]
 	trueObsList=[]
 	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
-	noisyObs=noisyObsList[0]
-	for model in mList:
-		model.train(noisyObs)
-	noisyObsList.pop(0)
-	trueObsList.pop(0)
 	for model in mList:
 		record={}
 		correct=0
+		noisyObs=noisyObsList[0]
 		for t in xrange(TESTOBS):
 			if not runEvent.is_set():
 				return
 			details='test iter:'+str(t)+'\t'
+			model.train(noisyObs)
 			(prediction,state)=model.predict()
 			noisyObs=noisyObsList[t]
 			trueObs=trueObsList[t]
@@ -65,7 +62,6 @@ def runTest(testIter,records):
 			details+='state:'+str(state)+'\t'
 			details+='predicted:'+str(prediction)+'\t'
 			details+='drew:'+str(o)+'\n'
-			model.train(noisyObs)
 		record['models']=model
 		record['details']=details
 		record['correct']=correct
