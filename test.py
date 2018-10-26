@@ -5,6 +5,7 @@ import threading
 import tasks
 import models
 import time
+import database
 runEvent=threading.Event()
 STATES=3
 SYMBOLS=3
@@ -78,13 +79,19 @@ def runTest(testIter,records):
 	print record.keys()
 def main(argv):
 	records=[]
+	db=database.Database('db.sqlite3')
+	db.getRecords(records)
 	runEvent.set()
 	inpHand=threading.Thread(None,inputHandler,'inputHandler',[records])
 	inpHand.start()
 	i=1
+	newRecords=[]
 	while runEvent.is_set():
-		record={}
-		runTest(i,records)
+		runTest(i,newRecords)
 		i+=1
+#	print records[-1]
+#	print newRecords[-1]
+	for record in newRecords:
+		db.insertRecord(record)
 if __name__=='__main__':
 	main(sys.argv)
