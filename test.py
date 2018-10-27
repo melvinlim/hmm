@@ -9,7 +9,7 @@ import database
 runEvent=threading.Event()
 STATES=3
 SYMBOLS=5
-MAXOBS=20
+MAXOBS=60
 TRAININGITERS=10
 TESTOBS=MAXOBS/2
 NOISEVAR=0.5
