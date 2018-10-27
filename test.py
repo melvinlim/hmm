@@ -8,17 +8,17 @@ import time
 import database
 runEvent=threading.Event()
 STATES=3
-SYMBOLS=3
-MAXOBS=60
+SYMBOLS=5
+MAXOBS=20
 TRAININGITERS=10
 TESTOBS=MAXOBS/2
 NOISEVAR=0.5
 POSITIVETASK=False
-POSITIVETASK=True
+#POSITIVETASK=True
 if POSITIVETASK:
-	codewords=[0,1,2]
+	codewords=[0,1,2,3,4]
 else:
-	codewords=[-1,0,1]
+	codewords=[-2,-1,0,1,2]
 def inputHandler(records):
 	while runEvent.is_set():
 		inp=raw_input()

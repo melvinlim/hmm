@@ -10,12 +10,12 @@ class JarTask(Task):
 		self.jars=jars.Jars()
 		if POSITIVETASK:
 			self.jars.put([+1,+1,+1,+1,+1,+1,+1,+1,0,+1,+1,0,0,0,+2])
-			self.jars.put([0,+1,+1,+1,+1,0,+2,+2])
-			self.jars.put([0,+2,+2,+2,+1,+2])
+			self.jars.put([0,+1,+1,+1,+1,0,+2,+2,3])
+			self.jars.put([0,+2,+2,+2,+1,+2,4,4])
 		else:
-			self.jars.put([+1,+1,+1,+1,+1,+1,+1,+1,0,+1,+1,0,0,0,-1])
+			self.jars.put([+1,+1,+1,+1,+1,+1,+1,+1,0,+1,+1,0,0,0,-1,2,2])
 			self.jars.put([0,+1,+1,+1,+1,0,-1,-1])
-			self.jars.put([0,-1,-1,-1,+1,-1])
+			self.jars.put([0,-1,-1,-1,+1,-1,-2,-2])
 	def draw(self):
 		return self.jars.draw()
 	def getNoisyTasks(self,maxObs,nTasks,mean,var,trueObsList,noisyObsList):
