@@ -273,8 +273,8 @@ class HMM(object):
 				self.A[i][j]=sumXi/sumGamma
 		self.updateB(obs)
 class GMM(HMM):
-	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS):
-		super(GMM,self).__init__(STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS)
+	def __init__(self,*args):
+		super(GMM,self).__init__(*args)
 		self.name='Gaussian Mixture Model'
 	def initB(self):
 		N=self.N
