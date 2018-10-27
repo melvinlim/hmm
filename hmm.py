@@ -305,7 +305,7 @@ class GMM(HMM):
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
 				if sumGammatjkT==0:
-					sumGammatjkT=1
+					sumGammatjkT=1.0
 				self._B[j].c[k]=sumGammatjkT
 				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
 				if sumGammatjkT>0.01:

@@ -22,7 +22,8 @@ def inputHandler(records):
 			elif inp=='info':
 				if len(records)>=3:
 					for i in xrange(3):
-						print time.asctime(records[-1-i]['gmtime']),
+						print time.asctime(records[-1-i]['gmtime'])
+						print records[-1-i]['stats']
 						records[-1-i]['models'].info()
 						print
 				else:
@@ -90,8 +91,12 @@ def main(argv):
 	while runEvent.is_set():
 		runTest(i,newRecords)
 		i+=1
-#	print records[-1]
-#	print newRecords[-1]
+	if len(newRecords)>=3:
+		for i in xrange(3):
+			print time.asctime(newRecords[-1-i]['gmtime'])
+			print newRecords[-1-i]['stats']
+			newRecords[-1-i]['models'].info()
+			print
 	for record in newRecords:
 		db.insertRecord(record)
 if __name__=='__main__':
