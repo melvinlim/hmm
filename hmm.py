@@ -4,16 +4,11 @@ import math
 import datatype
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
-def randomizeMatrix(mat):
-	M=len(mat)
-	N=len(mat[0])
-	for i in xrange(M):
-		for j in xrange(N):
-			mat[i][j]=random.randint(5,100)/100.0
 class CodeTable:
 	def __init__(self,M):
 		self.tableProb=datatype.array(M,1.0/M)
 		for i in xrange(M):
+			#self.tableProb[i]=random.randint(0,200)/100.0-1.0
 			self.tableProb[i]=random.randint(5,100)/100.0
 	def value(self,obs):
 		return self.tableProb[int(round(obs))]
@@ -45,7 +40,7 @@ class Mixture:
 	def printParams(self):
 		myprint.pprinta(self.c)
 		for g in self.gaussians:
-			print '%.2e'%g.mu,
+			print '%.2f'%g.mu,
 		print
 class HMM(object):
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS):

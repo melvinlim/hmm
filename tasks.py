@@ -2,15 +2,21 @@ import jars
 import random
 import math
 import copy
+POSITIVETASK=True
 class Task:
 	def __init__(self):
 		x=1
 class JarTask(Task):
 	def __init__(self):
 		self.jars=jars.Jars()
-		self.jars.put([1,1,1,1,1,1,1,1,0,1,1,0,0,0,2])
-		self.jars.put([0,1,1,1,1,0,2,2])
-		self.jars.put([0,2,2,2,1,2])
+		if POSITIVETASK:
+			self.jars.put([+1,+1,+1,+1,+1,+1,+1,+1,0,+1,+1,0,0,0,+2])
+			self.jars.put([0,+1,+1,+1,+1,0,+2,+2])
+			self.jars.put([0,+2,+2,+2,+1,+2])
+		else:
+			self.jars.put([+1,+1,+1,+1,+1,+1,+1,+1,0,+1,+1,0,0,0,-1])
+			self.jars.put([0,+1,+1,+1,+1,0,-1,-1])
+			self.jars.put([0,-1,-1,-1,+1,-1])
 	def draw(self):
 		return self.jars.draw()
 	def getNoisyTasks(self,maxObs,nTasks,mean,var,trueObsList,noisyObsList):

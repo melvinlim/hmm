@@ -32,7 +32,7 @@ class Database(object):
 		lines=self.cursor.execute(query,[float(record['time']),sqlite3.Binary(pickledData)])
 		self.db.commit()
 	def getRecords(self,records):
-		self.cursor.execute('select record from records')
+		self.cursor.execute('select record from records order by time asc')
 		for row in self.cursor:
 			record=pickle.loads(str(row[0]))
 			records.append(record)

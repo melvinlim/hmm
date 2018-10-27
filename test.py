@@ -22,6 +22,7 @@ def inputHandler(records):
 			elif inp=='info':
 				if len(records)>=3:
 					for i in xrange(3):
+						print time.asctime(records[-1-i]['gmtime']),
 						records[-1-i]['models'].info()
 						print
 				else:
