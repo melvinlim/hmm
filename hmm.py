@@ -5,7 +5,7 @@ import datatype
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 class CodeTable:
-	def __init__(self,M):
+	def __init__(self,M,codewords):
 		self.tableProb=datatype.array(M,1.0/M)
 		for i in xrange(M):
 			#self.tableProb[i]=random.randint(0,200)/100.0-1.0
@@ -43,8 +43,9 @@ class Mixture:
 			print '%.2f'%g.mu,
 		print
 class HMM(object):
-	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS):
+	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS,codewords):
 		self.name='Code Table Model'
+		self.codewords=codewords
 		self.trainingIters=TRAININGITERS
 		self.N=STATES
 		self.M=SYMBOLS
@@ -53,7 +54,7 @@ class HMM(object):
 		M=self.M
 		T=self.T
 		self.A=datatype.matrix(N,N,1.0/STATES)
-		self.initB()
+		self.initB(codewords)
 		self.pi=datatype.array(N,1.0/STATES)
 		self.alpha=datatype.matrix(T,N)
 		self.beta=datatype.matrix(T,N)
@@ -222,12 +223,12 @@ class HMM(object):
 #						print maxVal,maxArg
 				self.delta[t][j]=maxVal*self.B(j,obs[t])
 				self.psi[t][j]=maxArg
-	def initB(self):
+	def initB(self,codewords):
 		N=self.N
 		M=self.M
 		self._B=datatype.array(N)
 		for i in xrange(N):
-			self._B[i]=CodeTable(M)
+			self._B[i]=CodeTable(M,codewords)
 	def updateB(self,obs):
 		N=self.N
 		M=self.M
@@ -238,7 +239,7 @@ class HMM(object):
 				sumGamma=0
 				for t in xrange(T):
 					sumGamma+=self.gamma[t][j]
-					if int(round(obs[t]))==k:
+					if int(round(obs[t]))==self.codewords[k]:
 						gammaObsSymbVk+=self.gamma[t][j]
 				if PREVENTDIVIDEBYZERO:
 					if sumGamma==0:
@@ -276,7 +277,7 @@ class GMM(HMM):
 	def __init__(self,*args):
 		super(GMM,self).__init__(*args)
 		self.name='Gaussian Mixture Model'
-	def initB(self):
+	def initB(self,codewords):
 		N=self.N
 		M=self.M
 		self._B=datatype.array(N)
@@ -284,7 +285,7 @@ class GMM(HMM):
 			mus=[]
 			sigmaSqs=[]
 			for k in xrange(M):
-				mu=k+0.1*j
+				mu=codewords[k]+random.randint(0,500)/1000.0-0.25
 				sigmaSq=1.0
 				mus.append(mu)
 				sigmaSqs.append(sigmaSq)

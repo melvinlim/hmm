@@ -13,6 +13,7 @@ MAXOBS=60
 TRAININGITERS=20
 TESTOBS=MAXOBS/2
 NOISEVAR=0.5
+codewords=[0,1,2]
 def inputHandler(records):
 	while runEvent.is_set():
 		inp=raw_input()
@@ -42,8 +43,8 @@ def inputHandler(records):
 def runTest(testIter,records):
 	mList=[]
 	mList.append(models.UniformRandom(0,SYMBOLS-1))
-	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS))
-	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS))
+	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
+	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
 	task=tasks.JarTask()
 	noisyObsList=[]
 	trueObsList=[]
