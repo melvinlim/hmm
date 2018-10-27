@@ -10,10 +10,15 @@ runEvent=threading.Event()
 STATES=3
 SYMBOLS=3
 MAXOBS=60
-TRAININGITERS=20
+TRAININGITERS=10
 TESTOBS=MAXOBS/2
 NOISEVAR=0.5
-codewords=[0,1,2]
+POSITIVETASK=False
+POSITIVETASK=True
+if POSITIVETASK:
+	codewords=[0,1,2]
+else:
+	codewords=[-1,0,1]
 def inputHandler(records):
 	while runEvent.is_set():
 		inp=raw_input()
@@ -45,7 +50,7 @@ def runTest(testIter,records):
 	mList.append(models.UniformRandom(0,SYMBOLS-1))
 	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
 	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
-	task=tasks.JarTask()
+	task=tasks.JarTask(POSITIVETASK)
 	noisyObsList=[]
 	trueObsList=[]
 	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)

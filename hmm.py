@@ -8,8 +8,7 @@ class CodeTable:
 	def __init__(self,M,codewords):
 		self.tableProb=datatype.array(M,1.0/M)
 		for i in xrange(M):
-			#self.tableProb[i]=random.randint(0,200)/100.0-1.0
-			self.tableProb[i]=random.randint(5,100)/100.0
+			self.tableProb[i]=random.randint(0,100)/100.0
 	def value(self,obs):
 		return self.tableProb[int(round(obs))]
 	def printParams(self):
@@ -159,7 +158,7 @@ class HMM(object):
 			if self.B(state,i)>tmp:
 				tmp=self.B(state,i)
 				maxArg=i
-		return maxArg,state
+		return self.codewords[maxArg],state
 	def forward(self,obs):
 		sumAlphaBar=0
 		for i in xrange(self.N):
@@ -239,7 +238,7 @@ class HMM(object):
 				sumGamma=0
 				for t in xrange(T):
 					sumGamma+=self.gamma[t][j]
-					if int(round(obs[t]))==self.codewords[k]:
+					if abs(round(obs[t])-self.codewords[k])<0.0001:
 						gammaObsSymbVk+=self.gamma[t][j]
 				if PREVENTDIVIDEBYZERO:
 					if sumGamma==0:

@@ -2,12 +2,11 @@ import jars
 import random
 import math
 import copy
-POSITIVETASK=True
 class Task:
 	def __init__(self):
 		x=1
 class JarTask(Task):
-	def __init__(self):
+	def __init__(self,POSITIVETASK=True):
 		self.jars=jars.Jars()
 		if POSITIVETASK:
 			self.jars.put([+1,+1,+1,+1,+1,+1,+1,+1,0,+1,+1,0,0,0,+2])
