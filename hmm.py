@@ -58,15 +58,10 @@ class HMM(object):
 		self.pi=datatype.array(N,1.0/STATES)
 		self.alpha=datatype.matrix(T,N)
 		self.beta=datatype.matrix(T,N)
-		self.alphaBar=datatype.matrix(T,N)
-		self.betaBar=datatype.matrix(T,N)
-		self.alphaHat=datatype.matrix(T,N)
-		self.betaHat=datatype.matrix(T,N)
 		self.delta=datatype.matrix(T,N)
 		self.psi=datatype.matrix(T,N)
 		self.xi=datatype.tensor(T,N,N)
 		self.gamma=datatype.matrix(T,N)
-		self.scalefactor=datatype.array(T,0)
 		self.pObsGivenModel=datatype.array(T)
 	def train(self,obs):
 		for i in xrange(self.trainingIters):
@@ -114,8 +109,6 @@ class HMM(object):
 #		myprint.pprint(self.delta)
 #		print 'psi =',
 #		myprint.pprint(self.psi)
-#		print 'scalefactor =',
-#		myprint.pprinta(self.scalefactor)
 		eState=self.getExpState()
 		print 'eState =',
 		myprint.pprinta(eState)
@@ -161,49 +154,23 @@ class HMM(object):
 				maxArg=i
 		return self.codewords[maxArg],state
 	def forward(self,obs):
-		sumAlphaBar=0
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B(i,obs[0])
-			self.alphaBar[0][i]=self.alpha[0][i]
-			sumAlphaBar+=self.alphaBar[0][i]
-		if sumAlphaBar>0.00000:
-			self.scalefactor[0]=1.0/sumAlphaBar
-		else:
-			self.scalefactor[0]=INF
-		for i in xrange(self.N):
-			self.alphaHat[0][i]=self.alphaBar[0][i]*self.scalefactor[0]
 		for t in xrange(self.T-1):
-			self.scalefactor[t+1]=0
 			for j in xrange(self.N):
 				sumalpha=0
-				sumAlphaBar=0
 				for i in xrange(self.N):
 					sumalpha+=self.alpha[t][i]*self.A[i][j]
-					sumAlphaBar+=self.alphaHat[t][i]*self.A[i][j]
 				self.alpha[t+1][j]=sumalpha*self.B(j,obs[t+1])
-				self.alphaBar[t+1][j]=sumAlphaBar*self.B(j,obs[t+1])
-				self.scalefactor[t+1]+=self.alphaBar[t+1][j]
-			if self.scalefactor[t+1]>0.00000:
-				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
-			else:
-				self.scalefactor[t+1]=INF
-			for i in xrange(self.N):
-				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
 	def backward(self,obs):
 		for i in xrange(self.N):
 			self.beta[self.T-1][i]=1
-			self.betaBar[self.T-1][i]=1
-		for i in xrange(self.N):
-			self.betaHat[self.T-1][i]=1*self.scalefactor[self.T-1]
 		for t in xrange(self.T-1-1,-1,-1):
 			for i in xrange(self.N):
 				sumBetaJ=0
-				sumBetaBarJ=0
 				for j in xrange(self.N):
 					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-					sumBetaBarJ+=self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
 				self.beta[t][i]=sumBetaJ
-				self.betaHat[t][i]=sumBetaBarJ*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
@@ -253,13 +220,16 @@ class HMM(object):
 		M=self.M
 		T=self.T
 		for t in xrange(T-1):
+			probObsGivMod=0
 			for i in xrange(N):
-				sumXijHatJ=0
+				probObsGivMod+=self.alpha[t][i]*self.beta[t][i]
+			for i in xrange(N):
+				sumXijJ=0
 				for j in xrange(N):
-					xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-					self.xi[t][i][j]=xijHat
-					sumXijHatJ+=xijHat
-				self.gamma[t][i]=sumXijHatJ
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/probObsGivMod
+					self.xi[t][i][j]=xij
+					sumXijJ+=xij
+				self.gamma[t][i]=sumXijJ
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
 		for i in xrange(N):
