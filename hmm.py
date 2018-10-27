@@ -174,11 +174,11 @@ class HMM(object):
 			self.scalefactor[t+1]=0
 			for j in xrange(self.N):
 				sumAlphaHatI=0
-				sumAlphaI=0
+#				sumAlphaI=0
 				for i in xrange(self.N):
-					sumAlphaI+=self.alpha[t][i]*self.A[i][j]
+#					sumAlphaI+=self.alpha[t][i]*self.A[i][j]
 					sumAlphaHatI+=self.alphaHat[t][i]*self.A[i][j]
-				self.alpha[t+1][j]=sumAlphaI*self.B(j,obs[t+1])
+#				self.alpha[t+1][j]=sumAlphaI*self.B(j,obs[t+1])
 				self.alphaBar[t+1][j]=sumAlphaHatI*self.B(j,obs[t+1])
 				self.scalefactor[t+1]+=self.alphaBar[t+1][j]
 			if self.scalefactor[t+1]>0.00000:
@@ -187,22 +187,22 @@ class HMM(object):
 				self.scalefactor[t+1]=INF
 			for i in xrange(self.N):
 				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
-		self.probObsGivenModel=0
-		for i in xrange(self.N):
-			self.probObsGivenModel+=self.alpha[self.T-1][i]
+#		self.probObsGivenModel=0
+#		for i in xrange(self.N):
+#			self.probObsGivenModel+=self.alpha[self.T-1][i]
 	def backward(self,obs):
 		for i in xrange(self.N):
-			self.beta[self.T-1][i]=1
+#			self.beta[self.T-1][i]=1
 			self.betaBar[self.T-1][i]=1
 			self.betaHat[self.T-1][i]=1*self.scalefactor[self.T-1]
 		for t in xrange(self.T-1-1,-1,-1):
 			for i in xrange(self.N):
-				sumBetaJ=0
+#				sumBetaJ=0
 				sumBetaBarJ=0
 				for j in xrange(self.N):
-					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+#					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 					sumBetaBarJ+=self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-				self.beta[t][i]=sumBetaJ
+#				self.beta[t][i]=sumBetaJ
 				self.betaHat[t][i]=sumBetaBarJ*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
@@ -256,16 +256,18 @@ class HMM(object):
 			for i in xrange(N):
 				sumXijJ=0
 				for j in xrange(N):
-					if self.probObsGivenModel==0:
-						xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-					else:
-						xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-						xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
-						#print xijHat,xij
-						assert abs(xij-xijHat)<0.000001
+#					if self.probObsGivenModel==0:
+#						xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+#					else:
+#						xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+#						xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
+#						print xijHat,xij
+#						assert abs(xij-xijHat)<0.000001
+					xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
 					self.xi[t][i][j]=xij
 					sumXijJ+=xij
 				self.gamma[t][i]=sumXijJ
+				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
 		for i in xrange(N):
