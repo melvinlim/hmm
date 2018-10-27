@@ -47,7 +47,7 @@ def inputHandler(records):
 				print i
 def runTest(testIter,records):
 	mList=[]
-	mList.append(models.UniformRandom(0,SYMBOLS-1))
+	mList.append(models.UniformRandom(codewords[0],codewords[-1]))
 	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
 	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
 	task=tasks.JarTask(POSITIVETASK)

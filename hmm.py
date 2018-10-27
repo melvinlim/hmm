@@ -75,14 +75,14 @@ class HMM(object):
 			self.viterbi(obs)
 			self.update(obs)
 	def getPState(self):
-		pState=datatype.array(self.M,0.0)
+		pState=datatype.array(self.N,0.0)
 		eState=self.getExpState()
 		for s in xrange(self.N):
 			pState[s]=eState[s]/self.T
 		return pState
 	def getExpState(self):
-		expState=datatype.array(self.M,0.0)
-		for j in xrange(self.M):
+		expState=datatype.array(self.N,0.0)
+		for j in xrange(self.N):
 			for t in xrange(self.T):
 				expState[j]+=self.gamma[t][j]
 		return expState
@@ -315,13 +315,14 @@ class GMM(HMM):
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
 				if sumGammatjkT==0:
-					sumGammatjkT=1.0
+					sumGammatjkT=0.0001
 				self._B[j].c[k]=sumGammatjkT
 				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
 				if sumGammatjkT>0.01:
 					self._B[j].gaussians[k].sigmaSq=gammatjkdotsumSqDiff/sumGammatjkT
 				else:
 					self._B[j].gaussians[k].sigmaSq=0.01
+				self._B[j].gaussians[k].sigmaSq=2
 				sumGammatjkTK+=sumGammatjkT
 			for k in xrange(M):
 				self._B[j].c[k]/=sumGammatjkTK
