@@ -12,5 +12,6 @@ def main(argv):
 			print records[-1-i]['stats']
 			records[-1-i]['models'].info()
 			print
+	db.deleteWhere('name','Uniform Random Model')
 if __name__=='__main__':
 	main(sys.argv)

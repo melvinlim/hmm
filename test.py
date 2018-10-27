@@ -74,6 +74,7 @@ def runTest(testIter,records):
 			details+='predicted:'+str(prediction)+'\t'
 			details+='drew:'+str(o)+'\n'
 		record['models']=model
+		record['name']=model.name
 		record['details']=details
 		record['correct']=correct
 		stats='[%s]\tcorrect/testobs=\t%d\t%d'%(model.name,record['correct'],TESTOBS)
