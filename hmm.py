@@ -162,6 +162,9 @@ class HMM(object):
 				for i in xrange(self.N):
 					sumalpha+=self.alpha[t][i]*self.A[i][j]
 				self.alpha[t+1][j]=sumalpha*self.B(j,obs[t+1])
+		self.probObsGivenModel=0
+		for i in xrange(self.N):
+			self.probObsGivenModel+=self.alpha[self.T-1][i]
 	def backward(self,obs):
 		for i in xrange(self.N):
 			self.beta[self.T-1][i]=1
@@ -220,13 +223,10 @@ class HMM(object):
 		M=self.M
 		T=self.T
 		for t in xrange(T-1):
-			probObsGivMod=0
-			for i in xrange(N):
-				probObsGivMod+=self.alpha[t][i]*self.beta[t][i]
 			for i in xrange(N):
 				sumXijJ=0
 				for j in xrange(N):
-					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/probObsGivMod
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
 					self.xi[t][i][j]=xij
 					sumXijJ+=xij
 				self.gamma[t][i]=sumXijJ
