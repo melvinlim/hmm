@@ -2,6 +2,7 @@ import random
 import myprint
 import math
 import datatype
+INF=1000000.0
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 class CodeTable:
@@ -168,7 +169,7 @@ class HMM(object):
 		if sumAlphaBar>0.00000:
 			self.scalefactor[0]=1.0/sumAlphaBar
 		else:
-			self.scalefactor[0]=1.0
+			self.scalefactor[0]=INF
 		for i in xrange(self.N):
 			self.alphaHat[0][i]=self.alphaBar[0][i]*self.scalefactor[0]
 		for t in xrange(self.T-1):
@@ -185,7 +186,7 @@ class HMM(object):
 			if self.scalefactor[t+1]>0.00000:
 				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
 			else:
-				self.scalefactor[t+1]=1.0
+				self.scalefactor[t+1]=INF
 			for i in xrange(self.N):
 				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
 	def backward(self,obs):
@@ -212,8 +213,9 @@ class HMM(object):
 				maxVal=0
 				maxArg=0
 				for i in xrange(self.N):
-					if self.delta[t-1][i]<0.01:
-						self.delta[t-1][i]*=100.0
+					if self.delta[t-1][i]<0.0001:
+						for z in xrange(self.N):
+							self.delta[t-1][z]*=100.0
 				for i in xrange(self.N):
 					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
