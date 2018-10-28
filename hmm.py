@@ -281,10 +281,10 @@ class HMM(object):
 				sumXi=0
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
-				if PREVENTDIVIDEBYZERO:
-					if sumGamma==0:
-						sumGamma=0.5
-				self.A[i][j]=sumXi/sumGamma
+				if sumGamma==0:
+					self.A[i][j]=0.00001
+				else:
+					self.A[i][j]=sumXi/sumGamma
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):
