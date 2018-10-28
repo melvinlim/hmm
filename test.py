@@ -6,6 +6,10 @@ import tasks
 import models
 import time
 import database
+class Env:
+	def __init__(self,mdl,rating):
+		self.model=mdl
+		self.rating=rating
 runEvent=threading.Event()
 STATES=3
 SYMBOLS=5
@@ -15,6 +19,7 @@ TESTOBS=MAXOBS/2
 NOISEVAR=0.5
 POSITIVETASK=False
 #POSITIVETASK=True
+POPULATION=5
 if POSITIVETASK:
 	codewords=[0,1,2,3,4]
 else:
@@ -45,16 +50,17 @@ def inputHandler(records):
 			print 'exception:'
 			for i in info:
 				print i
-def runTest(testIter,records):
-	mList=[]
-	mList.append(models.UniformRandom(codewords[0],codewords[-1]))
-	mList.append(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
-	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
+def runTest(testIter,records,mList):
+#	mList.append(models.UniformRandom(codewords[0],codewords[-1]))
+#	mList.append(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords))
 	task=tasks.JarTask(POSITIVETASK)
 	noisyObsList=[]
 	trueObsList=[]
 	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
-	for model in mList:
+	while len(mList)<POPULATION:
+		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords),0))
+	averageRating=0
+	for env in mList:
 		record={}
 		correct=0
 		noisyObs=noisyObsList[0]
@@ -63,8 +69,8 @@ def runTest(testIter,records):
 			if not runEvent.is_set():
 				return
 			details='test iter:'+str(t)+'\t'
-			model.train(noisyObs)
-			(prediction,state)=model.predict()
+			env.model.train(noisyObs)
+			(prediction,state)=env.model.predict()
 			noisyObs=noisyObsList[t]
 			trueObs=trueObsList[t]
 			o=trueObs[-1]
@@ -73,11 +79,13 @@ def runTest(testIter,records):
 			details+='state:'+str(state)+'\t'
 			details+='predicted:'+str(prediction)+'\t'
 			details+='drew:'+str(o)+'\n'
-		record['models']=model
-		record['name']=model.name
+		record['models']=env.model
+		record['name']=env.model.name
 		record['details']=details
 		record['correct']=correct
-		stats='[%s]\tcorrect/testobs=\t%d\t%d'%(model.name,record['correct'],TESTOBS)
+		env.rating=correct
+		averageRating+=correct
+		stats='[%s]\tcorrect/testobs=\t%d\t%d'%(env.model.name,record['correct'],TESTOBS)
 		stats+='\t%f'%(time.clock()-startTime)
 		record['stats']=stats
 		record['gmtime']=time.gmtime()
@@ -85,6 +93,15 @@ def runTest(testIter,records):
 		records.append(record)
 		print stats
 	print 'finished test iteration #%d.  type q to exit.'%testIter
+	averageRating/=POPULATION
+	print averageRating
+	toRemove=[]
+	for i in xrange(len(mList)):
+		if mList[i].rating<averageRating:
+			toRemove.append(mList[i])
+	for x in toRemove:
+		print 'removed: %d\n'%x.rating
+		mList.remove(x)
 	print record.keys()
 def main(argv):
 	records=[]
@@ -94,9 +111,12 @@ def main(argv):
 	inpHand=threading.Thread(None,inputHandler,'inputHandler',[records])
 	inpHand.start()
 	i=1
+	mList=[]
+	for i in xrange(POPULATION):
+		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords),0))
 	newRecords=[]
 	while runEvent.is_set():
-		runTest(i,newRecords)
+		runTest(i,newRecords,mList)
 		i+=1
 	if len(newRecords)>=3:
 		for i in xrange(3):
