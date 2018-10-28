@@ -271,20 +271,36 @@ class HMM(object):
 					sumXijJ+=xij
 				self.gamma[t][i]=sumXijJ
 				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
+		sumPi=0
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
+			sumPi+=self.pi[i]
+		if sumPi==0:
+			for i in xrange(N):
+				self.pi[i]=1.0/self.N
+		elif sumPi<0.9:
+			for i in xrange(N):
+				self.pi[i]/=sumPi
 		for i in xrange(N):
 			sumGamma=0
 			for t in xrange(T-1):
 				sumGamma+=self.gamma[t][i]
+			renormReq=False
 			for j in xrange(N):
 				sumXi=0
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
 				if sumGamma==0:
 					self.A[i][j]=0.00001
+					renormReq=True
 				else:
 					self.A[i][j]=sumXi/sumGamma
+			if renormReq:
+				sumAijJ=0
+				for j in xrange(N):
+					sumAijJ+=self.A[i][j]
+				for j in xrange(N):
+					self.A[i][j]/=sumAijJ
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):
