@@ -235,12 +235,14 @@ class HMM(object):
 		M=self.M
 		T=self.T
 		for j in xrange(N):
+			sumGamma=0
+			for t in xrange(T):
+				sumGamma+=self.gamma[t][j]
 			for k in xrange(M):
 				gammaObsSymbVk=0
-				sumGamma=0
 				for t in xrange(T):
-					sumGamma+=self.gamma[t][j]
-					if abs(round(obs[t])-self.codewords[k])<0.0001:
+					#if abs(round(obs[t])-self.codewords[k])<0.0001:
+					if round(obs[t])==self.codewords[k]:
 						gammaObsSymbVk+=self.gamma[t][j]
 				if PREVENTDIVIDEBYZERO:
 					if sumGamma==0:
