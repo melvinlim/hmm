@@ -238,16 +238,17 @@ class HMM(object):
 			sumGamma=0
 			for t in xrange(T):
 				sumGamma+=self.gamma[t][j]
-			for k in xrange(M):
-				gammaObsSymbVk=0
-				for t in xrange(T):
-					#if abs(round(obs[t])-self.codewords[k])<0.0001:
-					if round(obs[t])==self.codewords[k]:
-						gammaObsSymbVk+=self.gamma[t][j]
-				if PREVENTDIVIDEBYZERO:
-					if sumGamma==0:
-						sumGamma=0.5
-				self._B[j].update(k,gammaObsSymbVk/sumGamma)
+			if sumGamma!=0:
+				for k in xrange(M):
+					gammaObsSymbVk=0
+					for t in xrange(T):
+						#if abs(round(obs[t])-self.codewords[k])<0.0001:
+						if round(obs[t])==self.codewords[k]:
+							gammaObsSymbVk+=self.gamma[t][j]
+					self._B[j].update(k,gammaObsSymbVk/sumGamma)
+			else:
+				pass
+#				print 'gamma zero.  unable to optimize...'
 	def B(self,state,obs):
 		return self._B[state].value(obs)
 	def update(self,obs):
