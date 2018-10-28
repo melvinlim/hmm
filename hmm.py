@@ -213,7 +213,7 @@ class HMM(object):
 				maxVal=0
 				maxArg=0
 				for i in xrange(self.N):
-					if self.delta[t-1][i]<0.0001:
+					if self.delta[t-1][i]<0.1:
 						for z in xrange(self.N):
 							self.delta[t-1][z]*=100.0
 				for i in xrange(self.N):
@@ -291,7 +291,7 @@ class HMM(object):
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
 				if sumGamma==0:
-					self.A[i][j]=0.00001
+					self.A[i][j]=0.1
 					renormReq=True
 				else:
 					self.A[i][j]=sumXi/sumGamma
