@@ -271,12 +271,13 @@ class HMM(object):
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
 		for i in xrange(N):
+			sumGamma=0
+			for t in xrange(T-1):
+				sumGamma+=self.gamma[t][i]
 			for j in xrange(N):
 				sumXi=0
-				sumGamma=0
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
-					sumGamma+=self.gamma[t][i]
 				if PREVENTDIVIDEBYZERO:
 					if sumGamma==0:
 						sumGamma=0.5
