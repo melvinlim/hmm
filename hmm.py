@@ -3,7 +3,8 @@ import myprint
 import math
 import datatype
 INF=1000000.0
-MINVAR=0.01
+PIWEIGHT=0.1
+AWEIGHT=0.1
 PREVENTDIVIDEBYZERO=True
 class CodeTable:
 	def __init__(self,M,codewords):
@@ -225,7 +226,7 @@ class HMM(object):
 				for i in xrange(self.N):
 					if self.delta[t-1][i]<0.1:
 						for z in xrange(self.N):
-							self.delta[t-1][z]*=100.0
+							self.delta[t-1][z]*=1000000.0
 				randomArg=random.randint(0,self.N-1)
 				maxArg=randomArg
 				maxVal=self.delta[t-1][maxArg]*self.A[maxArg][j]
@@ -292,7 +293,8 @@ class HMM(object):
 			if tmp==0:
 				self.pi[i]=self.gamma[0][i]
 			else:
-				tmp=self.pi[i]*self.B(i,obs[0])/tmp
+				#tmp=self.pi[i]*self.B(i,obs[0])/tmp
+				tmp=(self.pi[i]*self.B(i,obs[0])+PIWEIGHT)/(tmp+self.N*PIWEIGHT)
 				self.pi[i]=tmp
 			sumPi+=self.pi[i]
 		if sumPi==0:
@@ -319,7 +321,8 @@ class HMM(object):
 					self.A[i][j]=0.0001
 					renormReq=True
 				else:
-					self.A[i][j]=sumXi/sumGamma
+					#self.A[i][j]=sumXi/sumGamma
+					self.A[i][j]=(sumXi+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
 			if renormReq:
 				x00=self.A[i][0]
 				same=True
