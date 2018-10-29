@@ -5,7 +5,7 @@ import datatype
 ONE=1.0
 PIWEIGHT=0.1
 AWEIGHT=0.1
-BWEIGHT=0.1
+BWEIGHT=0.0001
 PREVENTDIVIDEBYZERO=True
 class CodeTable:
 	def __init__(self,M,codewords):
@@ -81,6 +81,9 @@ class HMM(object):
 		self.gamma=datatype.matrix(T,N)
 		self.pObsGivenModel=datatype.array(T)
 		self.scalefactor=datatype.array(T)
+		self.tC=datatype.matrix(N,M)
+		self.tMu=datatype.matrix(N,M)
+		self.tSigmaSq=datatype.matrix(N,M)
 	def train(self,obs):
 		for i in xrange(self.trainingIters):
 			self.forward(obs)
@@ -347,7 +350,6 @@ class GMM(HMM):
 		M=self.M
 		T=self.T
 		for j in xrange(N):
-			sumGammatjkTK=0
 			for k in xrange(M):
 				sumGammatjT=0
 				sumGammatjkT=0
@@ -359,10 +361,14 @@ class GMM(HMM):
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
-				self._B[j].c[k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.N*BWEIGHT)
-				self._B[j].gaussians[k].mu=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.N*BWEIGHT)
-				self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.N*BWEIGHT)
-				sumGammatjkTK+=sumGammatjkT
-#			for k in xrange(M):
-#				for t in xrange(T):
-				#print sumGammatjT,sumGammatjkTK
+				#self._B[j].c[k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
+				#self._B[j].gaussians[k].mu=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+				#self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+				self.tC[j][k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
+				self.tMu[j][k]=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+				self.tSigmaSq[j][k]=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+		for j in xrange(N):
+			for k in xrange(M):
+				self._B[j].c[k]=self.tC[j][k]
+				self._B[j].gaussians[k].mu=self.tMu[j][k]
+				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
