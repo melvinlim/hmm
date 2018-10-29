@@ -2,7 +2,7 @@ import random
 import myprint
 import math
 import datatype
-INF=1000000.0
+ONE=1.0
 PIWEIGHT=0.1
 AWEIGHT=0.1
 PREVENTDIVIDEBYZERO=True
@@ -180,7 +180,7 @@ class HMM(object):
 		if sumAlphaBar>0.00000:
 			self.scalefactor[0]=1.0/sumAlphaBar
 		else:
-			self.scalefactor[0]=INF
+			self.scalefactor[0]=ONE
 		for i in xrange(self.N):
 			self.alphaHat[0][i]=self.alphaBar[0][i]*self.scalefactor[0]
 		for t in xrange(self.T-1):
@@ -197,7 +197,7 @@ class HMM(object):
 			if self.scalefactor[t+1]>0.00000:
 				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
 			else:
-				self.scalefactor[t+1]=INF
+				self.scalefactor[t+1]=ONE
 			for i in xrange(self.N):
 				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
 #		self.probObsGivenModel=0
