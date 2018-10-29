@@ -5,8 +5,7 @@ import datatype
 ONE=1.0
 PIWEIGHT=0.1
 AWEIGHT=0.1
-BWEIGHT=0.0001
-PREVENTDIVIDEBYZERO=True
+BWEIGHT=0.1
 class CodeTable:
 	def __init__(self,M,codewords):
 		self.tableProb=datatype.array(M,1.0/M)
@@ -108,9 +107,6 @@ class HMM(object):
 			for i in xrange(self.N):
 				pSymb[j]+=self.B(i,j)
 		norm=sum(pSymb)
-		if PREVENTDIVIDEBYZERO:
-			if norm==0:
-				norm=1
 		for j in xrange(self.M):
 			pSymb[j]/=norm
 		return pSymb
@@ -340,7 +336,7 @@ class GMM(HMM):
 			mus=[]
 			sigmaSqs=[]
 			for k in xrange(M):
-				mu=codewords[k]+random.randint(0,500)/1000.0-0.25
+				mu=2.0*random.randint(0,500)/1000.0-0.25
 				sigmaSq=1.0
 				mus.append(mu)
 				sigmaSqs.append(sigmaSq)
@@ -371,4 +367,4 @@ class GMM(HMM):
 			for k in xrange(M):
 				self._B[j].c[k]=self.tC[j][k]
 				self._B[j].gaussians[k].mu=self.tMu[j][k]
-				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
+				self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
