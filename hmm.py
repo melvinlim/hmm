@@ -356,8 +356,8 @@ class GMM(HMM):
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
-#				if sumGammatjkT==0:
-#					sumGammatjkT=0.0001
+				if sumGammatjkT==0:
+					sumGammatjkT=0.0001
 				self._B[j].c[k]=sumGammatjkT
 				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
 				self._B[j].gaussians[k].sigmaSq=gammatjkdotsumSqDiff/sumGammatjkT
@@ -366,7 +366,6 @@ class GMM(HMM):
 				sumGammatjT=0
 				for t in xrange(T):
 					sumGammatjT+=self.gamma[t][j]
-				print sumGammatjT,sumGammatjkTK
-				assert abs(sumGammatjT-sumGammatjkTK)<0.5
+				#assert abs(sumGammatjT-sumGammatjkTK)<0.5
 				#self._B[j].c[k]/=sumGammatjkTK
-				self._B[j].c[k]/=sumGammatjkT
+				self._B[j].c[k]/=sumGammatjT
