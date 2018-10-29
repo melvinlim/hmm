@@ -6,10 +6,12 @@ import tasks
 import models
 import time
 import database
+MINCONFIDENCE=10
 class Env:
 	def __init__(self,mdl,rating):
 		self.model=mdl
 		self.rating=rating
+		self.confidence=0
 runEvent=threading.Event()
 STATES=3
 SYMBOLS=5
@@ -70,7 +72,8 @@ def runTest(testIter,records,mList):
 				return
 			details='test iter:'+str(t)+'\t'
 			env.model.train(noisyObs)
-			(prediction,state)=env.model.predict()
+			(prediction,state,confidence)=env.model.predict()
+			env.confidence+=confidence
 			noisyObs=noisyObsList[t]
 			trueObs=trueObsList[t]
 			o=trueObs[-1]
@@ -97,7 +100,11 @@ def runTest(testIter,records,mList):
 	print averageRating
 	toRemove=[]
 	for i in xrange(len(mList)):
+		print mList[i].confidence
 		if mList[i].rating<averageRating:
+			toRemove.append(mList[i])
+		elif mList[i].confidence<MINCONFIDENCE:
+			print 'sumConf<minConf:'%i
 			toRemove.append(mList[i])
 	for x in toRemove:
 		print 'removed: %d\n'%x.rating

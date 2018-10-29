@@ -42,6 +42,16 @@ class Mixture:
 		for g in self.gaussians:
 			print '%.2f'%g.mu,
 		print
+def randomize(A):
+	m=len(A)
+	n=len(A[0])
+	for i in xrange(m):
+		sumRow=0
+		for j in xrange(n):
+			A[i][j]=random.randint(1,1000)*1.0
+			sumRow+=A[i][j]
+		for j in xrange(n):
+			A[i][j]/=sumRow
 class HMM(object):
 	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS,codewords):
 		self.name='Code Table Model'
@@ -54,6 +64,7 @@ class HMM(object):
 		M=self.M
 		T=self.T
 		self.A=datatype.matrix(N,N,1.0/STATES)
+		randomize(self.A)
 		self.initB(codewords)
 		self.pi=datatype.array(N,1.0/STATES)
 		self.alpha=datatype.matrix(T,N)
@@ -157,7 +168,8 @@ class HMM(object):
 			if self.B(state,i)>tmp:
 				tmp=self.B(state,i)
 				maxArg=i
-		return self.codewords[maxArg],state
+		confidence=tmp
+		return self.codewords[maxArg],state,confidence
 	def forward(self,obs):
 		sumAlphaBar=0
 		for i in xrange(self.N):
@@ -277,7 +289,12 @@ class HMM(object):
 			sumPi+=self.pi[i]
 		if sumPi==0:
 			for i in xrange(N):
-				self.pi[i]=1.0/self.N
+				self.pi[i]=random.randint(1,10)*1.0
+			sumPi=0
+			for i in xrange(N):
+				sumPi+=self.pi[i]
+			for i in xrange(N):
+				self.pi[i]/=sumPi
 		elif sumPi<0.9:
 			for i in xrange(N):
 				self.pi[i]/=sumPi
@@ -291,11 +308,19 @@ class HMM(object):
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
 				if sumGamma==0:
-					self.A[i][j]=0.1
+					self.A[i][j]=0.0001
 					renormReq=True
 				else:
 					self.A[i][j]=sumXi/sumGamma
 			if renormReq:
+				x00=self.A[i][0]
+				same=True
+				for j in xrange(1,N):
+					if self.A[i][j]!=x00:
+						same=False
+				if not same:
+					for j in xrange(N):
+						self.A[i][j]=random.randint(1,1000)*1.0
 				sumAijJ=0
 				for j in xrange(N):
 					sumAijJ+=self.A[i][j]
