@@ -285,7 +285,14 @@ class HMM(object):
 				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
 		sumPi=0
 		for i in xrange(N):
-			self.pi[i]=self.gamma[0][i]
+			tmp=0
+			for j in xrange(N):
+				tmp+=self.pi[j]*self.B(j,obs[0])
+			if tmp==0:
+				self.pi[i]=self.gamma[0][i]
+			else:
+				tmp=self.pi[i]*self.B(i,obs[0])/tmp
+				self.pi[i]=tmp
 			sumPi+=self.pi[i]
 		if sumPi==0:
 			for i in xrange(N):
