@@ -283,8 +283,11 @@ class HMM(object):
 					xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
 					self.xi[t][i][j]=xij
 					sumXijJ+=xij
-				self.gamma[t][i]=sumXijJ
-				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
+				if sumXijJ>0:
+					self.gamma[t][i]=sumXijJ
+				else:
+					for k in xrange(N):
+						self.gamma[t][k]+=self.alphaHat[t][k]*self.betaHat[t][k]/self.scalefactor[t]
 		for i in xrange(N):
 			self.gamma[T-1][i]=self.alphaHat[T-1][i]*self.betaHat[T-1][i]/self.scalefactor[T-1]
 		sumPi=0
@@ -353,15 +356,17 @@ class GMM(HMM):
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
-				if sumGammatjkT==0:
-					sumGammatjkT=0.0001
+#				if sumGammatjkT==0:
+#					sumGammatjkT=0.0001
 				self._B[j].c[k]=sumGammatjkT
 				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
-				if sumGammatjkT>0.01:
-					self._B[j].gaussians[k].sigmaSq=gammatjkdotsumSqDiff/sumGammatjkT
-				else:
-					self._B[j].gaussians[k].sigmaSq=0.01
-				self._B[j].gaussians[k].sigmaSq=2
+				self._B[j].gaussians[k].sigmaSq=gammatjkdotsumSqDiff/sumGammatjkT
 				sumGammatjkTK+=sumGammatjkT
 			for k in xrange(M):
-				self._B[j].c[k]/=sumGammatjkTK
+				sumGammatjT=0
+				for t in xrange(T):
+					sumGammatjT+=self.gamma[t][j]
+				print sumGammatjT,sumGammatjkTK
+				assert abs(sumGammatjT-sumGammatjkTK)<0.5
+				#self._B[j].c[k]/=sumGammatjkTK
+				self._B[j].c[k]/=sumGammatjkT
