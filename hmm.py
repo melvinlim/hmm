@@ -222,12 +222,13 @@ class HMM(object):
 			self.psi[0][i]=-1
 		for t in xrange(1,self.T):
 			for j in xrange(self.N):
-				maxVal=0
-				maxArg=0
 				for i in xrange(self.N):
 					if self.delta[t-1][i]<0.1:
 						for z in xrange(self.N):
 							self.delta[t-1][z]*=100.0
+				randomArg=random.randint(0,self.N-1)
+				maxArg=randomArg
+				maxVal=self.delta[t-1][maxArg]*self.A[maxArg][j]
 				for i in xrange(self.N):
 					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
