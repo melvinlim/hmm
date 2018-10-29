@@ -317,26 +317,7 @@ class HMM(object):
 				sumXi=0
 				for t in xrange(T-1):
 					sumXi+=self.xi[t][i][j]
-				if sumGamma==0:
-					self.A[i][j]=0.0001
-					renormReq=True
-				else:
-					#self.A[i][j]=sumXi/sumGamma
-					self.A[i][j]=(sumXi+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
-			if renormReq:
-				x00=self.A[i][0]
-				same=True
-				for j in xrange(1,N):
-					if self.A[i][j]!=x00:
-						same=False
-				if not same:
-					for j in xrange(N):
-						self.A[i][j]=random.randint(1,1000)*1.0
-				sumAijJ=0
-				for j in xrange(N):
-					sumAijJ+=self.A[i][j]
-				for j in xrange(N):
-					self.A[i][j]/=sumAijJ
+				self.A[i][j]=(sumXi+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):
