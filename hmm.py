@@ -5,6 +5,7 @@ import datatype
 ONE=1.0
 PIWEIGHT=0.1
 AWEIGHT=0.1
+BWEIGHT=0.1
 PREVENTDIVIDEBYZERO=True
 class CodeTable:
 	def __init__(self,M,codewords):
@@ -356,16 +357,14 @@ class GMM(HMM):
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
-				if sumGammatjkT==0:
-					sumGammatjkT=0.0001
 				self._B[j].c[k]=sumGammatjkT
-				self._B[j].gaussians[k].mu=gammatjkdotobs/sumGammatjkT
-				self._B[j].gaussians[k].sigmaSq=gammatjkdotsumSqDiff/sumGammatjkT
+				self._B[j].gaussians[k].mu=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+BWEIGHT)
+				self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+BWEIGHT)
 				sumGammatjkTK+=sumGammatjkT
 			for k in xrange(M):
 				sumGammatjT=0
 				for t in xrange(T):
 					sumGammatjT+=self.gamma[t][j]
-				#assert abs(sumGammatjT-sumGammatjkTK)<0.5
+				#print sumGammatjT,sumGammatjkTK
 				#self._B[j].c[k]/=sumGammatjkTK
 				self._B[j].c[k]/=sumGammatjT
