@@ -78,7 +78,8 @@ class HMM(object):
 		self.psi=datatype.matrix(T,N)
 		self.xi=datatype.tensor(T,N,N)
 		self.gamma=datatype.matrix(T,N)
-		self.pObsGivenModel=datatype.array(T)
+		self.probObsGivenModel=0
+		self.prevProbObsGivenModel=0
 		self.scalefactor=datatype.array(T)
 		self.tC=datatype.matrix(N,M)
 		self.tMu=datatype.matrix(N,M)
@@ -86,6 +87,12 @@ class HMM(object):
 	def train(self,obs):
 		for i in xrange(self.trainingIters):
 			self.forward(obs)
+			if self.probObsGivenModel<self.prevProbObsGivenModel:
+				print 'at training iteration %d'%i
+				print 'unable to optimize any further'
+				assert False
+				return
+			self.prevProbObsGivenModel=self.probObsGivenModel
 			self.backward(obs)
 			self.viterbi(obs)
 			self.update(obs)
@@ -202,9 +209,9 @@ class HMM(object):
 				self.scalefactor[t+1]=ONE
 			for i in xrange(self.N):
 				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
-#		self.probObsGivenModel=0
-#		for i in xrange(self.N):
-#			self.probObsGivenModel+=self.alpha[self.T-1][i]
+		self.probObsGivenModel=0
+		for i in xrange(self.N):
+			self.probObsGivenModel+=self.alpha[self.T-1][i]
 	def backward(self,obs):
 		for i in xrange(self.N):
 			self.beta[self.T-1][i]=1
