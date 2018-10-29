@@ -104,7 +104,7 @@ def runTest(testIter,records,mList):
 		if mList[i].rating<averageRating:
 			toRemove.append(mList[i])
 		elif mList[i].confidence<MINCONFIDENCE:
-			print 'sumConf<minConf:'%i
+			print 'sumConf<minConf: %d'%i
 			toRemove.append(mList[i])
 	for x in toRemove:
 		print 'removed: %d\n'%x.rating
