@@ -226,7 +226,7 @@ class HMM(object):
 		for t in xrange(1,self.T):
 			for j in xrange(self.N):
 				for i in xrange(self.N):
-					if self.delta[t-1][i]<0.1:
+					if self.delta[t-1][i]<0.1 and self.delta[t-1][i]>0:
 						for z in xrange(self.N):
 							self.delta[t-1][z]*=1000000.0
 				randomArg=random.randint(0,self.N-1)
