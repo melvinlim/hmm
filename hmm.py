@@ -160,17 +160,37 @@ class HMM(object):
 				maxArg=i
 		return self.codewords[maxArg],state
 	def forward(self,obs):
+		sumAlphaBar=0
 		for i in xrange(self.N):
 			self.alpha[0][i]=self.pi[i]*self.B(i,obs[0])
-		for t in xrange(self.T-1):
-			for j in xrange(self.N):
-				sumAlphaI=0
-				for i in xrange(self.N):
-					sumAlphaI+=self.alpha[t][i]*self.A[i][j]
-				self.alpha[t+1][j]=sumAlphaI*self.B(j,obs[t+1])
-		self.probObsGivenModel=0
+			self.alphaBar[0][i]=self.alpha[0][i]
+			sumAlphaBar+=self.alphaBar[0][i]
+		if sumAlphaBar>0.00000:
+			self.scalefactor[0]=1.0/sumAlphaBar
+		else:
+			self.scalefactor[0]=INF
 		for i in xrange(self.N):
-			self.probObsGivenModel+=self.alpha[self.T-1][i]
+			self.alphaHat[0][i]=self.alphaBar[0][i]*self.scalefactor[0]
+		for t in xrange(self.T-1):
+			self.scalefactor[t+1]=0
+			for j in xrange(self.N):
+				sumAlphaHatI=0
+#				sumAlphaI=0
+				for i in xrange(self.N):
+#					sumAlphaI+=self.alpha[t][i]*self.A[i][j]
+					sumAlphaHatI+=self.alphaHat[t][i]*self.A[i][j]
+#				self.alpha[t+1][j]=sumAlphaI*self.B(j,obs[t+1])
+				self.alphaBar[t+1][j]=sumAlphaHatI*self.B(j,obs[t+1])
+				self.scalefactor[t+1]+=self.alphaBar[t+1][j]
+			if self.scalefactor[t+1]>0.00000:
+				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
+			else:
+				self.scalefactor[t+1]=INF
+			for i in xrange(self.N):
+				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
+#		self.probObsGivenModel=0
+#		for i in xrange(self.N):
+#			self.probObsGivenModel+=self.alpha[self.T-1][i]
 	def log(self,x):
 		if x==0:
 			return MINUSINF
@@ -178,13 +198,18 @@ class HMM(object):
 			return math.log(x)
 	def backward(self,obs):
 		for i in xrange(self.N):
-			self.beta[self.T-1][i]=1
+#			self.beta[self.T-1][i]=1
+			self.betaBar[self.T-1][i]=1
+			self.betaHat[self.T-1][i]=1*self.scalefactor[self.T-1]
 		for t in xrange(self.T-1-1,-1,-1):
 			for i in xrange(self.N):
-				sumBetaJ=0
+#				sumBetaJ=0
+				sumBetaBarJ=0
 				for j in xrange(self.N):
-					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-				self.beta[t][i]=sumBetaJ
+#					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+					sumBetaBarJ+=self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+#				self.beta[t][i]=sumBetaJ
+				self.betaHat[t][i]=sumBetaBarJ*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			#self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
@@ -243,10 +268,18 @@ class HMM(object):
 			for i in xrange(N):
 				sumXijJ=0
 				for j in xrange(N):
-					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
+#					if self.probObsGivenModel==0:
+#						xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+#					else:
+#						xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+#						xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
+#						print xijHat,xij
+#						assert abs(xij-xijHat)<0.000001
+					xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
 					self.xi[t][i][j]=xij
 					sumXijJ+=xij
 				self.gamma[t][i]=sumXijJ
+				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
 		sumPi=0
 		for i in xrange(N):
 			self.pi[i]=self.gamma[0][i]
@@ -322,109 +355,3 @@ class GMM(HMM):
 				sumGammatjkTK+=sumGammatjkT
 			for k in xrange(M):
 				self._B[j].c[k]/=sumGammatjkTK
-class ScaledCodeTable(HMM):
-	def __init__(self,*args):
-		super(ScaledCodeTable,self).__init__(*args)
-		self.name='Scaled Code Table'
-	def forward(self,obs):
-		sumAlphaBar=0
-		for i in xrange(self.N):
-			self.alpha[0][i]=self.pi[i]*self.B(i,obs[0])
-			self.alphaBar[0][i]=self.alpha[0][i]
-			sumAlphaBar+=self.alphaBar[0][i]
-		if sumAlphaBar>0.00000:
-			self.scalefactor[0]=1.0/sumAlphaBar
-		else:
-			self.scalefactor[0]=INF
-		for i in xrange(self.N):
-			self.alphaHat[0][i]=self.alphaBar[0][i]*self.scalefactor[0]
-		for t in xrange(self.T-1):
-			self.scalefactor[t+1]=0
-			for j in xrange(self.N):
-				sumAlphaHatI=0
-#				sumAlphaI=0
-				for i in xrange(self.N):
-#					sumAlphaI+=self.alpha[t][i]*self.A[i][j]
-					sumAlphaHatI+=self.alphaHat[t][i]*self.A[i][j]
-#				self.alpha[t+1][j]=sumAlphaI*self.B(j,obs[t+1])
-				self.alphaBar[t+1][j]=sumAlphaHatI*self.B(j,obs[t+1])
-				self.scalefactor[t+1]+=self.alphaBar[t+1][j]
-			if self.scalefactor[t+1]>0.00000:
-				self.scalefactor[t+1]=1.0/self.scalefactor[t+1]
-			else:
-				self.scalefactor[t+1]=INF
-			for i in xrange(self.N):
-				self.alphaHat[t+1][i]=self.alphaBar[t+1][i]*self.scalefactor[t+1]
-#		self.probObsGivenModel=0
-#		for i in xrange(self.N):
-#			self.probObsGivenModel+=self.alpha[self.T-1][i]
-	def log(self,x):
-		if x==0:
-			return MINUSINF
-		else:
-			return math.log(x)
-	def backward(self,obs):
-		for i in xrange(self.N):
-#			self.beta[self.T-1][i]=1
-			self.betaBar[self.T-1][i]=1
-			self.betaHat[self.T-1][i]=1*self.scalefactor[self.T-1]
-		for t in xrange(self.T-1-1,-1,-1):
-			for i in xrange(self.N):
-#				sumBetaJ=0
-				sumBetaBarJ=0
-				for j in xrange(self.N):
-#					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-					sumBetaBarJ+=self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-#				self.beta[t][i]=sumBetaJ
-				self.betaHat[t][i]=sumBetaBarJ*self.scalefactor[t]
-	def update(self,obs):
-		N=self.N
-		M=self.M
-		T=self.T
-		for t in xrange(T-1):
-			for i in xrange(N):
-				sumXijJ=0
-				for j in xrange(N):
-#					if self.probObsGivenModel==0:
-#						xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-#					else:
-#						xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-#						xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
-#						print xijHat,xij
-#						assert abs(xij-xijHat)<0.000001
-					xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-					self.xi[t][i][j]=xij
-					sumXijJ+=xij
-				self.gamma[t][i]=sumXijJ
-				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
-		sumPi=0
-		for i in xrange(N):
-			self.pi[i]=self.gamma[0][i]
-			sumPi+=self.pi[i]
-		if sumPi==0:
-			for i in xrange(N):
-				self.pi[i]=1.0/self.N
-		elif sumPi<0.9:
-			for i in xrange(N):
-				self.pi[i]/=sumPi
-		for i in xrange(N):
-			sumGamma=0
-			for t in xrange(T-1):
-				sumGamma+=self.gamma[t][i]
-			renormReq=False
-			for j in xrange(N):
-				sumXi=0
-				for t in xrange(T-1):
-					sumXi+=self.xi[t][i][j]
-				if sumGamma==0:
-					self.A[i][j]=0.1
-					renormReq=True
-				else:
-					self.A[i][j]=sumXi/sumGamma
-			if renormReq:
-				sumAijJ=0
-				for j in xrange(N):
-					sumAijJ+=self.A[i][j]
-				for j in xrange(N):
-					self.A[i][j]/=sumAijJ
-		self.updateB(obs)
