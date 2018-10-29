@@ -3,7 +3,6 @@ import myprint
 import math
 import datatype
 INF=1000000.0
-MINUSINF=-1000000.0
 MINVAR=0.01
 PREVENTDIVIDEBYZERO=True
 class CodeTable:
@@ -191,11 +190,6 @@ class HMM(object):
 #		self.probObsGivenModel=0
 #		for i in xrange(self.N):
 #			self.probObsGivenModel+=self.alpha[self.T-1][i]
-	def log(self,x):
-		if x==0:
-			return MINUSINF
-		else:
-			return math.log(x)
 	def backward(self,obs):
 		for i in xrange(self.N):
 #			self.beta[self.T-1][i]=1
@@ -212,26 +206,23 @@ class HMM(object):
 				self.betaHat[t][i]=sumBetaBarJ*self.scalefactor[t]
 	def viterbi(self,obs):
 		for i in xrange(self.N):
-			#self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
-			self.delta[0][i]=self.log(self.pi[i])+self.log(self.B(i,obs[0]))
+			self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
 			self.psi[0][i]=-1
 		for t in xrange(1,self.T):
 			for j in xrange(self.N):
 				maxVal=0
 				maxArg=0
-#				for i in xrange(self.N):
-#					if self.delta[t-1][i]<0.1:
-#						for z in xrange(self.N):
-#							self.delta[t-1][z]*=100.0
 				for i in xrange(self.N):
-#					tmp=self.delta[t-1][i]*self.A[i][j]
-					tmp=self.delta[t-1][i]+self.log(self.A[i][j])
+					if self.delta[t-1][i]<0.1:
+						for z in xrange(self.N):
+							self.delta[t-1][z]*=100.0
+				for i in xrange(self.N):
+					tmp=self.delta[t-1][i]*self.A[i][j]
 					if tmp>maxVal:
 						maxVal=tmp
 						maxArg=i
 #						print maxVal,maxArg
-#				self.delta[t][j]=maxVal*self.B(j,obs[t])
-				self.delta[t][j]=maxVal+self.log(self.B(j,obs[t]))
+				self.delta[t][j]=maxVal*self.B(j,obs[t])
 				self.psi[t][j]=maxArg
 	def initB(self,codewords):
 		N=self.N
