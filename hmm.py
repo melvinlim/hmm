@@ -285,6 +285,7 @@ class HMM(object):
 					sumXijJ+=xij
 				self.gamma[t][i]=sumXijJ
 				#assert abs(self.gamma[t][i]-(self.alphaHat[t][i]*self.betaHat[t][i]/self.scalefactor[t])<0.000001)
+		self.gamma[T-1][i]=self.alphaHat[T-1][i]*self.betaHat[T-1][i]/self.scalefactor[T-1]
 		sumPi=0
 		for i in xrange(N):
 			tmp=0
