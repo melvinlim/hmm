@@ -4,7 +4,7 @@ import math
 import copy
 class Task:
 	def __init__(self):
-		x=1
+		pass
 class JarTask(Task):
 	def __init__(self,POSITIVETASK=True):
 		self.jars=jars.Jars()
@@ -32,8 +32,9 @@ class JarTask(Task):
 			noisyObsList.append(noisyObs)
 	def getNoisy(self,nObs,mean,var,trueObs,noisyObs):
 		for o in xrange(nObs):
-			trueObs.append(self.draw())
-			noisyObs.append(self.draw()+self.noise(var))
+			result=self.draw()
+			trueObs.append(result)
+			noisyObs.append(result+self.noise(var))
 	def getSingleNoisy(self,mean,var,trueObs,noisyObs):
 		trueObs.pop(0)
 		noisyObs.pop(0)
@@ -43,5 +44,4 @@ class JarTask(Task):
 		if var==0:
 			return 0
 		x=random.randint(0,1000)/1000.0
-#		n=math.exp(-0.5*(x-0.5)**2/var)/(2*math.pi*var)
 		return x-0.5
