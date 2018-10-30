@@ -81,7 +81,7 @@ def runTest(testIter,records,mList):
 				correct+=1
 			details+='state:'+str(state)+'\t'
 			details+='predicted:'+str(prediction)+'\t'
-			details+='drew:'+str(o)+'\n'
+			details+='drew:\t%s,\t%s\n'%(str(o),str(noisyObs[-1]))
 		record['models']=env.model
 		record['name']=env.model.name
 		record['details']=details

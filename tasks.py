@@ -38,8 +38,9 @@ class JarTask(Task):
 	def getSingleNoisy(self,mean,var,trueObs,noisyObs):
 		trueObs.pop(0)
 		noisyObs.pop(0)
-		trueObs.append(self.draw())
-		noisyObs.append(self.draw()+self.noise(var))
+		result=self.draw()
+		trueObs.append(result)
+		noisyObs.append(result+self.noise(var))
 	def noise(self,var):
 		if var==0:
 			return 0
