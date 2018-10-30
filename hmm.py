@@ -361,6 +361,72 @@ class HMM(object):
 				self.A[i][j]=(self.sumXiT[i][j]+AWEIGHT)/(self.sumGammaTm1[i]+self.N*AWEIGHT)
 				#self.A[i][j]=(sumXiT+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
 		self.updateB(obs)
+class HMMU(HMM):	#unscaled version of HMM.
+	def __init__(self,*args):
+		super(HMMU,self).__init__(*args)
+		self.name='Unscaled Code Table Model'
+	def forward(self,obs):
+		for i in xrange(self.N):
+			self.alpha[0][i]=self.pi[i]*self.B(i,obs[0])
+		for t in xrange(self.T-1):
+			for j in xrange(self.N):
+				sumAlphaI=0
+				for i in xrange(self.N):
+					sumAlphaI+=self.alpha[t][i]*self.A[i][j]
+				self.alpha[t+1][j]=sumAlphaI*self.B(j,obs[t+1])
+		self.probObsGivenModel=0
+		for i in xrange(self.N):
+			self.probObsGivenModel+=self.alpha[self.T-1][i]
+	def backward(self,obs):
+		for i in xrange(self.N):
+			self.beta[self.T-1][i]=1
+		for t in xrange(self.T-1-1,-1,-1):
+			for i in xrange(self.N):
+				sumBetaJ=0
+				for j in xrange(self.N):
+					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+				self.beta[t][i]=sumBetaJ
+	def update(self,obs):
+		N=self.N
+		M=self.M
+		T=self.T
+		for t in xrange(T):
+			for k in xrange(N):
+				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.probObsGivenModel
+		for t in xrange(T-1):
+			for i in xrange(N):
+				sumXijJ=0
+				for j in xrange(N):
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
+					if xij==0 and self.beta[t][i]>0:
+						xij=self.gamma[t][i]/self.beta[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
+					self.xi[t][i][j]=xij
+					sumXijJ+=xij
+		sumPi=0
+		for i in xrange(N):
+			self.gammaInitial[i]+=self.gamma[0][i]
+			self.pi[i]=self.gammaInitial[i]*1.0/self.observedSeq
+			sumPi+=self.pi[i]
+		for i in xrange(N):
+			self.pi[i]/=sumPi
+		if sumPi==0:
+			print 'sumPi was 0'
+			assert False
+		for i in xrange(N):
+			sumGammaTm1=0
+			for t in xrange(T-1):
+				sumGammaTm1+=self.gamma[t][i]
+			self.sumGammaTm1[i]+=sumGammaTm1
+			for j in xrange(N):
+				sumXiT=0
+				for t in xrange(T-1):
+					sumXiT+=self.xi[t][i][j]
+				self.sumXiT[i][j]+=sumXiT
+				self.A[i][j]=(self.sumXiT[i][j]+AWEIGHT)/(self.sumGammaTm1[i]+self.N*AWEIGHT)
+		self.updateB(obs)
+class HMMU(HMM):	#unscaled version of HMM.
+	def __init__(self,*args):
+		super(HMMU,self).__init__(*args)
 class GMM(HMM):
 	def __init__(self,*args):
 		super(GMM,self).__init__(*args)
