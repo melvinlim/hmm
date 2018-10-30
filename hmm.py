@@ -106,11 +106,11 @@ class HMM(object):
 			self.forward(obs)
 			if self.probObsGivenModel==0:
 				return
-#			if self.probObsGivenModel<self.prevProbObsGivenModel:
+			if self.probObsGivenModel<self.prevProbObsGivenModel:
 #				print 'at training iteration %d'%i
 #				print 'unable to optimize any further'
 #				assert False
-#				return
+				return
 			self.prevProbObsGivenModel=self.probObsGivenModel
 			self.backward(obs)
 			self.update(obs)
