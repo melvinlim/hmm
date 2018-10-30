@@ -310,7 +310,6 @@ class HMM(object):
 					xij=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
 					if xij==0 and self.beta[t][i]>0:
 						xij=self.gamma[t][i]/self.beta[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
-					#xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
 					self.xi[t][i][j]=xij
 					sumXijJ+=xij
 				if sumXijJ>0:
@@ -390,14 +389,18 @@ class HMMU(HMM):	#unscaled version of HMM.
 		N=self.N
 		M=self.M
 		T=self.T
+		self.pogl=self.array(T)
 		for t in xrange(T):
+			self.pogl[t]=0
+			for i in xrange(N):
+				self.pogl[t]+=self.alpha[t][i]*self.beta[t][i]
 			for k in xrange(N):
-				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.probObsGivenModel
+				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.pogl[t]
 		for t in xrange(T-1):
 			for i in xrange(N):
 				sumXijJ=0
 				for j in xrange(N):
-					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.pogl[t]
 					if xij==0 and self.beta[t][i]>0:
 						xij=self.gamma[t][i]/self.beta[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 					self.xi[t][i][j]=xij
