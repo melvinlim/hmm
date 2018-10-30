@@ -16,8 +16,8 @@ runEvent=threading.Event()
 STATES=3
 SYMBOLS=5
 MAXOBS=40
-TRAININGITERS=10
-TESTOBS=MAXOBS/2
+TRAININGITERS=1
+TESTOBS=10
 NOISEVAR=0.5
 POSITIVETASK=False
 #POSITIVETASK=True
@@ -66,10 +66,11 @@ def runTest(testIter,records,mList):
 		correct=0
 		noisyObs=noisyObsList[0]
 		startTime=time.clock()
+		details=''
 		for t in xrange(TESTOBS):
 			if not runEvent.is_set():
 				return
-			details='test iter:'+str(t)+'\t'
+			details+='test iter:'+str(t)+'\t'
 			env.model.train(noisyObs)
 			(prediction,state,confidence)=env.model.predict()
 			env.confidence+=confidence
@@ -93,17 +94,18 @@ def runTest(testIter,records,mList):
 		record['gmtime']=time.gmtime()
 		record['time']=time.time()
 		records.append(record)
+		print details
 		print stats
 	print 'finished test iteration #%d.  type q to exit.'%testIter
 	averageRating/=POPULATION
 	print averageRating
 	toRemove=[]
 	for i in xrange(len(mList)):
-		print mList[i].confidence
+#		print mList[i].confidence
 		if mList[i].rating<averageRating:
 			toRemove.append(mList[i])
 		elif mList[i].confidence<=MINCONFIDENCE:
-			print 'sumConf<minConf: %f'%i
+			print 'sumConf<minConf for model id #%d'%i
 			toRemove.append(mList[i])
 	for x in toRemove:
 		print 'removed: %d\n'%x.rating

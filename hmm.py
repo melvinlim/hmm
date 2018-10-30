@@ -49,7 +49,7 @@ def randomize(A):
 	for i in xrange(m):
 		sumRow=0
 		for j in xrange(n):
-			A[i][j]=random.randint(1,1000)*1.0
+			A[i][j]=random.randint(1,10000)*1.0
 			sumRow+=A[i][j]
 		for j in xrange(n):
 			A[i][j]/=sumRow
@@ -104,6 +104,8 @@ class HMM(object):
 		self.observedSeq+=1
 		for i in xrange(self.trainingIters):
 			self.forward(obs)
+			if self.probObsGivenModel==0:
+				return
 #			if self.probObsGivenModel<self.prevProbObsGivenModel:
 #				print 'at training iteration %d'%i
 #				print 'unable to optimize any further'
