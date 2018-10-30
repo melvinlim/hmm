@@ -70,7 +70,7 @@ def runTest(testIter,records,mList):
 			if not runEvent.is_set():
 				return
 			details='test iter:'+str(t)+'\t'
-#			env.model.train(noisyObs)
+			env.model.train(noisyObs)
 			(prediction,state,confidence)=env.model.predict()
 			env.confidence+=confidence
 			noisyObs=noisyObsList[t]

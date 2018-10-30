@@ -87,22 +87,28 @@ class HMM(object):
 		self.tMu=datatype.matrix(N,M)
 		self.tSigmaSq=datatype.matrix(N,M)
 		self.xi=datatype.tensor(T,N,N)
-		self.gammaInitial=datatype.matrix(MAXSEQ,N)
-		self.sumGammaObsT=datatype.matrix(MAXSEQ,N)
-		self.sumGammaT=datatype.matrix(MAXSEQ,N)
-		self.sumXiT=datatype.tensor(MAXSEQ,N,N)
+		#self.gammaInitial=datatype.matrix(MAXSEQ,N)
+		#self.sumGammaObsT=datatype.matrix(MAXSEQ,N)
+		#self.sumGammaTm1=datatype.matrix(MAXSEQ,N)
+		#self.sumGammaT=datatype.matrix(MAXSEQ,N)
+		#self.sumXiT=datatype.tensor(MAXSEQ,N,N)
+		self.gammaInitial=datatype.array(N)
+		self.sumGammaObsT=datatype.matrix(N,M)
+		self.sumGammaTm1=datatype.array(N)
+		self.sumGammaT=datatype.array(N)
+		self.sumXiT=datatype.matrix(N,N)
 	def train(self,obs):
+		#if self.observedSeq>self.MAXSEQ:
+		#	print 'max seq reached'
+		#	return
 		self.observedSeq+=1
-		if self.observedSeq>self.MAXSEQ:
-			print 'max seq reached'
-			return
 		for i in xrange(self.trainingIters):
 			self.forward(obs)
-			if self.probObsGivenModel<self.prevProbObsGivenModel:
-				print 'at training iteration %d'%i
-				print 'unable to optimize any further'
-				assert False
-				return
+#			if self.probObsGivenModel<self.prevProbObsGivenModel:
+#				print 'at training iteration %d'%i
+#				print 'unable to optimize any further'
+#				assert False
+#				return
 			self.prevProbObsGivenModel=self.probObsGivenModel
 			self.backward(obs)
 			self.viterbi(obs)
@@ -269,17 +275,20 @@ class HMM(object):
 		M=self.M
 		T=self.T
 		for j in xrange(N):
-			sumGamma=0
+			sumGammaT=0
 			for t in xrange(T):
-				sumGamma+=self.gamma[t][j]
-			if sumGamma!=0:
+				sumGammaT+=self.gamma[t][j]
+			self.sumGammaT[j]+=sumGammaT
+			if sumGammaT!=0:
 				for k in xrange(M):
 					gammaObsSymbVk=0
 					for t in xrange(T):
 						#if abs(round(obs[t])-self.codewords[k])<0.0001:
 						if round(obs[t])==self.codewords[k]:
 							gammaObsSymbVk+=self.gamma[t][j]
-					self._B[j].update(k,gammaObsSymbVk/sumGamma)
+					self.sumGammaObsT[j][k]+=gammaObsSymbVk
+					self._B[j].update(k,self.sumGammaObsT[j][k]/self.sumGammaT[j])
+					#self._B[j].update(k,gammaObsSymbVk/sumGammaT)
 			else:
 				pass
 #				print 'gamma zero.  unable to optimize...'
@@ -311,18 +320,19 @@ class HMM(object):
 			self.gamma[T-1][i]=self.alphaHat[T-1][i]*self.betaHat[T-1][i]/self.scalefactor[T-1]
 		sumPi=0
 		for i in xrange(N):
-			tmp=0
-			for j in xrange(N):
-				tmp+=self.pi[j]*self.B(j,obs[0])
-			self.gammaInitial[self.observedSeq][i]=self.gamma[0][i]
-			if tmp==0:
-				self.pi[i]=self.gamma[0][i]
-			else:
-				#tmp=self.pi[i]*self.B(i,obs[0])/tmp
-				tmp=(self.pi[i]*self.B(i,obs[0])+PIWEIGHT)/(tmp+self.N*PIWEIGHT)
-				self.pi[i]=tmp
+			#self.gammaInitial[self.observedSeq][i]=self.gamma[0][i]
+			#tmpSum=0
+			#for k xrange(self.observedSeq+1):
+			#	tmpSum+=self.gammaInitial[k][[i]
+			self.gammaInitial[i]+=self.gamma[0][i]
+			self.pi[i]=self.gammaInitial[i]*1.0/self.observedSeq
+			#self.pi[i]=self.gamma[0][i]
 			sumPi+=self.pi[i]
+		for i in xrange(N):
+			self.pi[i]/=sumPi
 		if sumPi==0:
+			print 'sumPi was 0'
+			assert False
 			for i in xrange(N):
 				self.pi[i]=random.randint(1,10)*1.0
 			sumPi=0
@@ -334,17 +344,20 @@ class HMM(object):
 			for i in xrange(N):
 				self.pi[i]/=sumPi
 		for i in xrange(N):
-			sumGammaT=0
+			sumGammaTm1=0
 			for t in xrange(T-1):
-				sumGammaT+=self.gamma[t][i]
-			self.sumGammaT[self.observedSeq][i]=sumGammaT
+				sumGammaTm1+=self.gamma[t][i]
+			#self.sumGammaTm1[self.observedSeq][i]=sumGammaTm1
+			self.sumGammaTm1[i]+=sumGammaTm1
 			renormReq=False
 			for j in xrange(N):
 				sumXiT=0
 				for t in xrange(T-1):
 					sumXiT+=self.xi[t][i][j]
-				self.sumXiT[self.observedSeq][i][j]=sumXiT
-				self.A[i][j]=(sumXiT+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
+				#self.sumXiT[self.observedSeq][i][j]=sumXiT
+				self.sumXiT[i][j]+=sumXiT
+				self.A[i][j]=(self.sumXiT[i][j]+AWEIGHT)/(self.sumGammaTm1[i]+self.N*AWEIGHT)
+				#self.A[i][j]=(sumXiT+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):
