@@ -111,8 +111,8 @@ class HMM(object):
 #				return
 			self.prevProbObsGivenModel=self.probObsGivenModel
 			self.backward(obs)
-			self.viterbi(obs)
 			self.update(obs)
+			self.viterbi(obs)
 	def getPState(self):
 		pState=datatype.array(self.N,0.0)
 		eState=self.getExpState()
@@ -193,7 +193,7 @@ class HMM(object):
 			if self.B(state,i)>tmp:
 				tmp=self.B(state,i)
 				maxArg=i
-		confidence=tmp
+		confidence=self.probObsGivenModel
 		return self.codewords[maxArg],state,confidence
 	def forward(self,obs):
 		sumAlphaBar=0

@@ -6,7 +6,7 @@ import tasks
 import models
 import time
 import database
-MINCONFIDENCE=10
+MINCONFIDENCE=0
 class Env:
 	def __init__(self,mdl,rating):
 		self.model=mdl
@@ -102,8 +102,8 @@ def runTest(testIter,records,mList):
 		print mList[i].confidence
 		if mList[i].rating<averageRating:
 			toRemove.append(mList[i])
-		elif mList[i].confidence<MINCONFIDENCE:
-			print 'sumConf<minConf: %d'%i
+		elif mList[i].confidence<=MINCONFIDENCE:
+			print 'sumConf<minConf: %f'%i
 			toRemove.append(mList[i])
 	for x in toRemove:
 		print 'removed: %d\n'%x.rating
