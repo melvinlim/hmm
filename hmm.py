@@ -312,13 +312,6 @@ class HMM(object):
 						xij=self.gamma[t][i]/self.beta[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 					self.xi[t][i][j]=xij
 					sumXijJ+=xij
-				if sumXijJ>0:
-					self.gamma[t][i]=sumXijJ
-				else:
-					for k in xrange(N):
-						self.gamma[t][k]+=self.alphaHat[t][k]*self.betaHat[t][k]/self.scalefactor[t]
-		for i in xrange(N):
-			self.gamma[T-1][i]=self.alphaHat[T-1][i]*self.betaHat[T-1][i]/self.scalefactor[T-1]
 		sumPi=0
 		for i in xrange(N):
 			#self.gammaInitial[self.observedSeq][i]=self.gamma[0][i]
@@ -334,16 +327,6 @@ class HMM(object):
 		if sumPi==0:
 			print 'sumPi was 0'
 			assert False
-			for i in xrange(N):
-				self.pi[i]=random.randint(1,10)*1.0
-			sumPi=0
-			for i in xrange(N):
-				sumPi+=self.pi[i]
-			for i in xrange(N):
-				self.pi[i]/=sumPi
-		elif sumPi<0.9:
-			for i in xrange(N):
-				self.pi[i]/=sumPi
 		for i in xrange(N):
 			sumGammaTm1=0
 			for t in xrange(T-1):
