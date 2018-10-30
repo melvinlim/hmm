@@ -54,7 +54,9 @@ def randomize(A):
 		for j in xrange(n):
 			A[i][j]/=sumRow
 class HMM(object):
-	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS,codewords):
+	def __init__(self,STATES,SYMBOLS,OBSERVATIONS,TRAININGITERS,codewords,MAXSEQ):
+		self.observedSeq=0
+		self.MAXSEQ=MAXSEQ
 		self.name='Code Table Model'
 		self.codewords=codewords
 		self.trainingIters=TRAININGITERS
@@ -84,7 +86,16 @@ class HMM(object):
 		self.tC=datatype.matrix(N,M)
 		self.tMu=datatype.matrix(N,M)
 		self.tSigmaSq=datatype.matrix(N,M)
+		self.xi=datatype.tensor(T,N,N)
+		self.gammaInitial=datatype.matrix(MAXSEQ,N)
+		self.sumGammaObsT=datatype.matrix(MAXSEQ,N)
+		self.sumGammaT=datatype.matrix(MAXSEQ,N)
+		self.sumXiT=datatype.tensor(MAXSEQ,N,N)
 	def train(self,obs):
+		self.observedSeq+=1
+		if self.observedSeq>self.MAXSEQ:
+			print 'max seq reached'
+			return
 		for i in xrange(self.trainingIters):
 			self.forward(obs)
 			if self.probObsGivenModel<self.prevProbObsGivenModel:
@@ -303,6 +314,7 @@ class HMM(object):
 			tmp=0
 			for j in xrange(N):
 				tmp+=self.pi[j]*self.B(j,obs[0])
+			self.gammaInitial[self.observedSeq][i]=self.gamma[0][i]
 			if tmp==0:
 				self.pi[i]=self.gamma[0][i]
 			else:
@@ -322,15 +334,17 @@ class HMM(object):
 			for i in xrange(N):
 				self.pi[i]/=sumPi
 		for i in xrange(N):
-			sumGamma=0
+			sumGammaT=0
 			for t in xrange(T-1):
-				sumGamma+=self.gamma[t][i]
+				sumGammaT+=self.gamma[t][i]
+			self.sumGammaT[self.observedSeq][i]=sumGammaT
 			renormReq=False
 			for j in xrange(N):
-				sumXi=0
+				sumXiT=0
 				for t in xrange(T-1):
-					sumXi+=self.xi[t][i][j]
-				self.A[i][j]=(sumXi+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
+					sumXiT+=self.xi[t][i][j]
+				self.sumXiT[self.observedSeq][i][j]=sumXiT
+				self.A[i][j]=(sumXiT+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):

@@ -59,7 +59,7 @@ def runTest(testIter,records,mList):
 	trueObsList=[]
 	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
 	while len(mList)<POPULATION:
-		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords),0))
+		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords,TESTOBS),0))
 	averageRating=0
 	for env in mList:
 		record={}
@@ -119,7 +119,7 @@ def main(argv):
 	i=1
 	mList=[]
 	for i in xrange(POPULATION):
-		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords),0))
+		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords,TESTOBS),0))
 	newRecords=[]
 	while runEvent.is_set():
 		runTest(i,newRecords,mList)
