@@ -103,6 +103,7 @@ class HMM(object):
 		#	return
 		self.observedSeq+=1
 		i=0
+		self.obs=obs
 		while i<self.trainingIters and (self.probObsGivenModel>=self.prevProbObsGivenModel):
 #			print i,self.probObsGivenModel,self.prevProbObsGivenModel
 			self.prevProbObsGivenModel=self.probObsGivenModel
@@ -116,7 +117,6 @@ class HMM(object):
 #				print 'unable to optimize any further'
 #				assert False
 				return
-			self.viterbi(obs)
 			i+=1
 		self.prevProbObsGivenModel=0
 		self.probObsGivenModel=0
@@ -185,6 +185,7 @@ class HMM(object):
 		myprint.pprinta(pSymb)
 		return pSymb
 	def predict(self):
+		self.viterbi(self.obs)
 		T=self.T
 		M=self.M
 		tmp=self.delta[T-1][0]
