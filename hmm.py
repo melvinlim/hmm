@@ -102,19 +102,24 @@ class HMM(object):
 		#	print 'max seq reached'
 		#	return
 		self.observedSeq+=1
-		for i in xrange(self.trainingIters):
+		i=0
+		while i<self.trainingIters and (self.probObsGivenModel>=self.prevProbObsGivenModel):
+#			print i,self.probObsGivenModel,self.prevProbObsGivenModel
+			self.prevProbObsGivenModel=self.probObsGivenModel
 			self.forward(obs)
+			self.backward(obs)
+			self.update(obs)
+#			if self.probObsGivenModel<self.prevProbObsGivenModel:
 			if self.probObsGivenModel==0:
-				return
-			if self.probObsGivenModel<self.prevProbObsGivenModel:
-#				print 'at training iteration %d'%i
+				print 'at training iteration %d'%i
+				print 'pogm==0'
 #				print 'unable to optimize any further'
 #				assert False
 				return
-			self.prevProbObsGivenModel=self.probObsGivenModel
-			self.backward(obs)
-			self.update(obs)
 			self.viterbi(obs)
+			i+=1
+		self.prevProbObsGivenModel=0
+		self.probObsGivenModel=0
 	def getPState(self):
 		pState=datatype.array(self.N,0.0)
 		eState=self.getExpState()
@@ -368,6 +373,9 @@ class HMMU(HMM):	#unscaled version of HMM.
 				for j in xrange(self.N):
 					sumBetaJ+=self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 				self.beta[t][i]=sumBetaJ
+		if self.probObsGivenModel==0:
+			for i in xrange(self.N):
+				self.probObsGivenModel+=self.beta[0][i]*self.pi[i]*self.B(i,obs[0])
 	def update(self,obs):
 		N=self.N
 		M=self.M
@@ -378,6 +386,8 @@ class HMMU(HMM):	#unscaled version of HMM.
 			for i in xrange(N):
 				self.probObsGivenModel+=self.alpha[t][i]*self.beta[t][i]
 			t+=1
+		if self.probObsGivenModel==0:
+			return
 		for t in xrange(T):
 			for k in xrange(N):
 				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.probObsGivenModel
