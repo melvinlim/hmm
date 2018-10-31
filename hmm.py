@@ -285,8 +285,8 @@ class HMM(object):
 				for k in xrange(M):
 					gammaObsSymbVk=0
 					for t in xrange(T):
-						#if abs(round(obs[t])-self.codewords[k])<0.0001:
-						if round(obs[t])==self.codewords[k]:
+						if abs(round(obs[t])-self.codewords[k])<0.0001:
+						#if round(obs[t])==self.codewords[k]:
 							gammaObsSymbVk+=self.gamma[t][j]
 					self.sumGammaObsT[j][k]+=gammaObsSymbVk
 					self._B[j].update(k,self.sumGammaObsT[j][k]/self.sumGammaT[j])
@@ -372,18 +372,20 @@ class HMMU(HMM):	#unscaled version of HMM.
 		N=self.N
 		M=self.M
 		T=self.T
-		self.pogl=self.array(T)
-		for t in xrange(T):
-			self.pogl[t]=0
+		#note: probObsGivenModel is the same for every value of t.  therefore, if it is not calculable at a certain value of t, try other values.
+		t=0
+		while self.probObsGivenModel==0 and t<T:
 			for i in xrange(N):
-				self.pogl[t]+=self.alpha[t][i]*self.beta[t][i]
+				self.probObsGivenModel+=self.alpha[t][i]*self.beta[t][i]
+			t+=1
+		for t in xrange(T):
 			for k in xrange(N):
-				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.pogl[t]
+				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.probObsGivenModel
 		for t in xrange(T-1):
 			for i in xrange(N):
 				sumXijJ=0
 				for j in xrange(N):
-					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.pogl[t]
+					xij=self.alpha[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]/self.probObsGivenModel
 					if xij==0 and self.beta[t][i]>0:
 						xij=self.gamma[t][i]/self.beta[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.beta[t+1][j]
 					self.xi[t][i][j]=xij
@@ -410,9 +412,6 @@ class HMMU(HMM):	#unscaled version of HMM.
 				self.sumXiT[i][j]+=sumXiT
 				self.A[i][j]=(self.sumXiT[i][j]+AWEIGHT)/(self.sumGammaTm1[i]+self.N*AWEIGHT)
 		self.updateB(obs)
-class HMMU(HMM):	#unscaled version of HMM.
-	def __init__(self,*args):
-		super(HMMU,self).__init__(*args)
 class GMM(HMM):
 	def __init__(self,*args):
 		super(GMM,self).__init__(*args)
