@@ -329,10 +329,10 @@ class HMM(object):
 			self.pi[i]=self.gammaInitial[i]*1.0/self.observedSeq
 			#self.pi[i]=self.gamma[0][i]
 			sumPi+=self.pi[i]
-		for i in xrange(N):
-			self.pi[i]/=sumPi
-		if sumPi==0:
-			print 'sumPi was 0'
+#		for i in xrange(N):
+#			self.pi[i]/=sumPi
+		if abs(1.0-sumPi)>0.1:
+			print 'sumPi was <0.9'
 			assert False
 		for i in xrange(N):
 			sumGammaTm1=0
