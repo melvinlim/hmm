@@ -486,7 +486,7 @@ class GMM(HMM):
 				gammatjkdotobs=0
 				gammatjkdotsumSqDiff=0
 				for t in xrange(T):
-					gammatjk=self.gamma[t][j]*self._B[j].c[k]*obs[t]/self._B[j].value(obs[t])
+					gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
