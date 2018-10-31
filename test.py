@@ -16,9 +16,9 @@ class Env:
 runEvent=threading.Event()
 STATES=3
 SYMBOLS=5
-MAXOBS=80
-TRAININGITERS=10
-TESTOBS=10
+MAXOBS=60
+TRAININGITERS=1
+TESTOBS=30
 NOISEVAR=0.5
 POSITIVETASK=False
 #POSITIVETASK=True
@@ -60,7 +60,7 @@ def runTest(testIter,records,mList):
 	trueObsList=[]
 	task.getNoisyTasks(MAXOBS,TESTOBS,0,NOISEVAR,trueObsList,noisyObsList)
 	while len(mList)<POPULATION:
-		mList.append(Env(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords,TESTOBS),0))
+		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords,TESTOBS),0))
 	averageRating=0
 	for env in mList:
 		record={}
@@ -123,7 +123,7 @@ def main(argv):
 	i=1
 	mList=[]
 	for i in xrange(POPULATION):
-		mList.append(Env(hmm.GMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords,TESTOBS),0))
+		mList.append(Env(hmm.HMM(STATES,SYMBOLS,MAXOBS,TRAININGITERS,codewords,TESTOBS),0))
 	newRecords=[]
 	while runEvent.is_set():
 		runTest(i,newRecords,mList)

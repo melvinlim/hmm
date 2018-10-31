@@ -373,7 +373,7 @@ class HMM(object):
 				sumAJ+=self.A[i][j]
 			for j in xrange(N):
 				self.A[i][j]/=sumAJ
-				#self.A[i][j]=(sumXiT+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
+				#self.A[i][j]=(sumXiT+AWEIGHT)/(sumGammaTm1+self.N*AWEIGHT)
 		self.updateB(obs)
 class HMMU(HMM):	#unscaled version of HMM.
 	def __init__(self,*args):
@@ -509,3 +509,103 @@ class GMM(HMM):
 				self._B[j].c[k]=self.tC[j][k]
 				self._B[j].gaussians[k].mu=self.tMu[j][k]
 				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
+class GMM1D(HMM):
+	def __init__(self,*args):
+		super(GMM1D,self).__init__(*args)
+		self.name='1D Gaussian Mixture Model'
+	def predict(self):
+		T=self.T
+		M=self.M
+		tmp=self.delta[T-1][0]
+		maxArg=0
+		for i in xrange(1,self.N):
+			if self.delta[T-1][i]>tmp:
+				tmp=self.delta[T-1][i]
+				maxArg=i
+		state=maxArg
+		tmp=self.B(state,0)
+		maxArg=0
+		for i in xrange(1,M):
+			if self.B(state,i)>tmp:
+				tmp=self.B(state,i)
+				maxArg=i
+		return self.codewords[maxArg],state,1
+	def viterbi(self,obs):
+		for i in xrange(self.N):
+			self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
+			self.psi[0][i]=-1
+		for t in xrange(1,self.T):
+			for j in xrange(self.N):
+				maxVal=0
+				maxArg=0
+				for i in xrange(self.N):
+					if self.delta[t-1][i]<0.01:
+						self.delta[t-1][i]*=100.0
+				for i in xrange(self.N):
+					tmp=self.delta[t-1][i]*self.A[i][j]
+					if tmp>maxVal:
+						maxVal=tmp
+						maxArg=i
+#						print maxVal,maxArg
+				self.delta[t][j]=maxVal*self.B(j,obs[t])
+				self.psi[t][j]=maxArg
+	def initB(self,codewords):
+		N=self.N
+		M=self.M
+		self._B=datatype.array(N)
+		for i in xrange(N):
+			#mu=codewords[i]+random.randint(0,500)/1000.0-0.25
+			mu=codewords[i]+0.1
+			sigmaSq=1.0
+			self._B[i]=Gaussian(mu,sigmaSq)
+	def updateB(self,obs):
+		MINVAR=0.5
+		N=self.N
+		M=self.M
+		T=self.T
+		for j in xrange(N):
+			for k in xrange(M):
+				gammaObsSymbVk2=0
+				sumGamma2=0
+				gammaVar=0
+				for t in xrange(T):
+					gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
+					sumGamma2+=self.gamma[t][j]
+					gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
+#					if PREVENTDIVIDEBYZERO:
+#						if sumGamma==0:
+#							sumGamma=0.5
+#					print self._B[j].mu
+				self._B[j].mu=gammaObsSymbVk2/sumGamma2
+				self._B[j].sigmaSq=gammaVar/sumGamma2
+				if self._B[j].sigmaSq<MINVAR:
+					self._B[j].sigmaSq=MINVAR
+	def B(self,state,obs):
+		return self._B[state].value(obs)
+	def update(self,obs):
+		N=self.N
+		M=self.M
+		T=self.T
+		for t in xrange(T-1):
+			for i in xrange(N):
+				sumXijHatJ=0
+				for j in xrange(N):
+					xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
+					self.xi[t][i][j]=xijHat
+					sumXijHatJ+=xijHat
+				self.gamma[t][i]=sumXijHatJ
+		for i in xrange(N):
+			self.pi[i]=self.gamma[0][i]
+		for i in xrange(N):
+			for j in xrange(N):
+				sumXi=0
+				sumGamma=0
+				for t in xrange(T-1):
+					sumXi+=self.xi[t][i][j]
+					sumGamma+=self.gamma[t][i]
+				#if PREVENTDIVIDEBYZERO:
+				if True:
+					if sumGamma==0:
+						sumGamma=0.5
+				self.A[i][j]=sumXi/sumGamma
+		self.updateB(obs)
