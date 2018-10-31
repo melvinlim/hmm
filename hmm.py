@@ -339,7 +339,7 @@ class HMM(object):
 				sumGammaTm1+=self.gamma[t][i]
 			#self.sumGammaTm1[self.observedSeq][i]=sumGammaTm1
 			self.sumGammaTm1[i]+=sumGammaTm1
-			renormReq=False
+			sumAJ=0
 			for j in xrange(N):
 				sumXiT=0
 				for t in xrange(T-1):
@@ -347,6 +347,9 @@ class HMM(object):
 				#self.sumXiT[self.observedSeq][i][j]=sumXiT
 				self.sumXiT[i][j]+=sumXiT
 				self.A[i][j]=(self.sumXiT[i][j]+AWEIGHT)/(self.sumGammaTm1[i]+self.N*AWEIGHT)
+				sumAJ+=self.A[i][j]
+			for j in xrange(N):
+				self.A[i][j]/=sumAJ
 				#self.A[i][j]=(sumXiT+AWEIGHT)/(sumGamma+self.N*AWEIGHT)
 		self.updateB(obs)
 class HMMU(HMM):	#unscaled version of HMM.
