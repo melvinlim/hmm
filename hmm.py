@@ -420,12 +420,16 @@ class HMMU(HMM):	#unscaled version of HMM.
 			for t in xrange(T-1):
 				sumGammaTm1+=self.gamma[t][i]
 			self.sumGammaTm1[i]+=sumGammaTm1
+			sumAJ=0
 			for j in xrange(N):
 				sumXiT=0
 				for t in xrange(T-1):
 					sumXiT+=self.xi[t][i][j]
 				self.sumXiT[i][j]+=sumXiT
 				self.A[i][j]=(self.sumXiT[i][j]+AWEIGHT)/(self.sumGammaTm1[i]+self.N*AWEIGHT)
+				sumAJ+=self.A[i][j]
+			for j in xrange(N):
+				self.A[i][j]/=sumAJ
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):
