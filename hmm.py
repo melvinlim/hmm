@@ -455,7 +455,7 @@ class HMMU(HMM):	#unscaled version of HMM.
 		self.updateB(obs)
 class GMM(HMM):
 	def __init__(self,*args):
-		super(HMM,self).__init__(*args)
+		super(GMM,self).__init__(*args)
 		self.name='Gaussian Mixture Model'
 		N=self.N
 		M=self.M
@@ -498,14 +498,12 @@ class GMM(HMM):
 				#self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 #				self.tC[j][k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
 #				self.tMu[j][k]=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
-				self.tC[j][k]=(self.sumGamma2T[j]+BWEIGHT)/(self.sumGammaT[j]+self.M*BWEIGHT)
-				sumTCK+=self.tC[j][k]
 				self.tMu[j][k]=(self.sumGamma2ObsT[j][k]+BWEIGHT)/(self.sumGamma2T[j]+self.M*BWEIGHT)
-			for k in xrange(M):
-				self.tC[j][k]/=sumTCK
+			#for k in xrange(M):
+				#self.tC[j][k]/=sumTCK
 				#self.tSigmaSq[j][k]=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 		for j in xrange(N):
 			for k in xrange(M):
-				self._B[j].c[k]=self.tC[j][k]
+				self._B[j].c[k]=1
 				self._B[j].gaussians[k].mu=self.tMu[j][k]
 				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
