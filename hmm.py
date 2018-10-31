@@ -101,12 +101,12 @@ class HMM(object):
 		#if self.observedSeq>self.MAXSEQ:
 		#	print 'max seq reached'
 		#	return
-		self.observedSeq+=1
 		i=0
 		self.obs=obs
 		self.prevProbObsGivenModel=0
 		self.probObsGivenModel=0
 		while i<self.trainingIters and (self.probObsGivenModel>=self.prevProbObsGivenModel):
+			self.observedSeq+=1
 #			print i,self.probObsGivenModel,self.prevProbObsGivenModel
 			self.prevProbObsGivenModel=self.probObsGivenModel
 			self.forward(obs)
@@ -131,6 +131,7 @@ class HMM(object):
 		for j in xrange(self.N):
 			for t in xrange(self.T):
 				expState[j]+=self.gamma[t][j]
+			expState[j]/=self.observedSeq
 		return expState
 	def obsProb(self):
 		pSymb=datatype.array(self.M,0.0)
