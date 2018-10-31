@@ -104,6 +104,8 @@ class HMM(object):
 		self.observedSeq+=1
 		i=0
 		self.obs=obs
+		self.prevProbObsGivenModel=0
+		self.probObsGivenModel=0
 		while i<self.trainingIters and (self.probObsGivenModel>=self.prevProbObsGivenModel):
 #			print i,self.probObsGivenModel,self.prevProbObsGivenModel
 			self.prevProbObsGivenModel=self.probObsGivenModel
@@ -118,8 +120,6 @@ class HMM(object):
 #				assert False
 				return
 			i+=1
-		self.prevProbObsGivenModel=0
-		self.probObsGivenModel=0
 	def getPState(self):
 		pState=datatype.array(self.N,0.0)
 		eState=self.getExpState()
