@@ -7,6 +7,7 @@ import models
 import time
 import database
 MINCONFIDENCE=0
+STOREMODELS=False
 class Env:
 	def __init__(self,mdl,rating):
 		self.model=mdl
@@ -113,8 +114,9 @@ def runTest(testIter,records,mList):
 	print record.keys()
 def main(argv):
 	records=[]
-	db=database.Database('db.sqlite3')
-	db.getRecords(records)
+	if STOREMODELS:
+		db=database.Database('db.sqlite3')
+		db.getRecords(records)
 	runEvent.set()
 	inpHand=threading.Thread(None,inputHandler,'inputHandler',[records])
 	inpHand.start()
@@ -132,7 +134,8 @@ def main(argv):
 			print newRecords[-1-i]['stats']
 			newRecords[-1-i]['models'].info()
 			print
-	for record in newRecords:
-		db.insertRecord(record)
+	if STOREMODELS:
+		for record in newRecords:
+			db.insertRecord(record)
 if __name__=='__main__':
 	main(sys.argv)
