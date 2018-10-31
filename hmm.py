@@ -486,7 +486,7 @@ class GMM(HMM):
 				gammatjkdotobs=0
 				gammatjkdotsumSqDiff=0
 				for t in xrange(T):
-					gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
+					gammatjk=self.gamma[t][j]*self._B[j].c[k]*obs[t]/self._B[j].value(obs[t])
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
@@ -498,12 +498,12 @@ class GMM(HMM):
 				#self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 #				self.tC[j][k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
 #				self.tMu[j][k]=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+				self.tC[j][k]=(self.sumGamma2T[j]+BWEIGHT)/(self.sumGammaT[j]+self.M*BWEIGHT)
 				self.tMu[j][k]=(self.sumGamma2ObsT[j][k]+BWEIGHT)/(self.sumGamma2T[j]+self.M*BWEIGHT)
 			#for k in xrange(M):
 				#self.tC[j][k]/=sumTCK
 				#self.tSigmaSq[j][k]=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 		for j in xrange(N):
 			for k in xrange(M):
-				self._B[j].c[k]=1
 				self._B[j].gaussians[k].mu=self.tMu[j][k]
 				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
