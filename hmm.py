@@ -453,7 +453,7 @@ class HMMU(HMM):	#unscaled version of HMM.
 			for j in xrange(N):
 				self.A[i][j]/=sumAJ
 		self.updateB(obs)
-class HMM(HMM):
+class GMM(HMM):
 	def __init__(self,*args):
 		super(HMM,self).__init__(*args)
 		self.name='Gaussian Mixture Model'
