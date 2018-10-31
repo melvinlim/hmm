@@ -109,6 +109,7 @@ class HMM(object):
 			self.observedSeq+=1
 #			print i,self.probObsGivenModel,self.prevProbObsGivenModel
 			self.prevProbObsGivenModel=self.probObsGivenModel
+#			self.preventMatchingRows()
 			self.forward(obs)
 			self.backward(obs)
 			self.update(obs)
@@ -204,6 +205,24 @@ class HMM(object):
 				maxArg=i
 		confidence=self.probObsGivenModel
 		return self.codewords[maxArg],state,confidence
+	def preventMatchingRows(self):
+		N=self.N
+		M=self.M
+		toRandomize=[]
+		for j in xrange(1,N):
+			rowSum=0
+			for k in xrange(M):
+				rowSum+=abs(self._B[j].value(k)-self._B[j-1].value(k))
+			if rowSum<0.1:
+				toRandomize.append(j)
+		for x in toRandomize:
+			sumRow=0
+			for k in xrange(M):
+				self._B[x].update(k,random.randint(0,100)/100.0)
+				sumRow+=self._B[x].value(k)
+			for k in xrange(M):
+				self._B[x].update(k,self._B[x].value(k)/sumRow)
+			print 'randomized row %d',x
 	def forward(self,obs):
 		sumAlphaBar=0
 		for i in xrange(self.N):
@@ -329,11 +348,14 @@ class HMM(object):
 			self.pi[i]=self.gammaInitial[i]*1.0/self.observedSeq
 			#self.pi[i]=self.gamma[0][i]
 			sumPi+=self.pi[i]
-#		for i in xrange(N):
-#			self.pi[i]/=sumPi
+		for i in xrange(N):
+			self.pi[i]/=sumPi
 		if abs(1.0-sumPi)>0.1:
-			print 'sumPi was <0.9'
-			assert False
+			for i in xrange(N):
+				denom=0
+				for k in xrange(self.N):
+					denom+=self.pi[k]*self.B(k,obs[0])
+				self.pi[i]=(BWEIGHT+self.pi[i]*self.B(i,obs[0]))/(self.N*BWEIGHT+denom)
 		for i in xrange(N):
 			sumGammaTm1=0
 			for t in xrange(T-1):
@@ -431,10 +453,14 @@ class HMMU(HMM):	#unscaled version of HMM.
 			for j in xrange(N):
 				self.A[i][j]/=sumAJ
 		self.updateB(obs)
-class GMM(HMM):
+class HMM(HMM):
 	def __init__(self,*args):
-		super(GMM,self).__init__(*args)
+		super(HMM,self).__init__(*args)
 		self.name='Gaussian Mixture Model'
+		N=self.N
+		M=self.M
+		self.sumGamma2ObsT=datatype.matrix(N,M)
+		self.sumGamma2T=datatype.array(N)
 	def initB(self,codewords):
 		N=self.N
 		M=self.M
@@ -443,7 +469,7 @@ class GMM(HMM):
 			mus=[]
 			sigmaSqs=[]
 			for k in xrange(M):
-				mu=2.0*random.randint(0,500)/1000.0-0.25
+				mu=codewords[k]+random.randint(0,500)/1000.0-0.25
 				sigmaSq=1.0
 				mus.append(mu)
 				sigmaSqs.append(sigmaSq)
@@ -453,6 +479,7 @@ class GMM(HMM):
 		M=self.M
 		T=self.T
 		for j in xrange(N):
+			sumTCK=0
 			for k in xrange(M):
 				sumGammatjT=0
 				sumGammatjkT=0
@@ -460,18 +487,25 @@ class GMM(HMM):
 				gammatjkdotsumSqDiff=0
 				for t in xrange(T):
 					gammatjk=self.gamma[t][j]*self._B[j].c[k]*self._B[j].gaussians[k].value(obs[t])/self._B[j].value(obs[t])
-					sumGammatjT+=self.gamma[t][j]
 					sumGammatjkT+=gammatjk
 					gammatjkdotobs+=gammatjk*obs[t]
 					gammatjkdotsumSqDiff+=(obs[t]-self._B[j].gaussians[k].mu)**2
+					sumGammatjT+=self.gamma[t][j]
+				self.sumGamma2ObsT[j][k]=gammatjkdotobs
+				self.sumGamma2T[j]=sumGammatjkT
 				#self._B[j].c[k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
 				#self._B[j].gaussians[k].mu=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 				#self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
-				self.tC[j][k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
-				self.tMu[j][k]=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
-				self.tSigmaSq[j][k]=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+#				self.tC[j][k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
+#				self.tMu[j][k]=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
+				self.tC[j][k]=(self.sumGamma2T[j]+BWEIGHT)/(self.sumGammaT[j]+self.M*BWEIGHT)
+				sumTCK+=self.tC[j][k]
+				self.tMu[j][k]=(self.sumGamma2ObsT[j][k]+BWEIGHT)/(self.sumGamma2T[j]+self.M*BWEIGHT)
+			for k in xrange(M):
+				self.tC[j][k]/=sumTCK
+				#self.tSigmaSq[j][k]=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 		for j in xrange(N):
 			for k in xrange(M):
 				self._B[j].c[k]=self.tC[j][k]
 				self._B[j].gaussians[k].mu=self.tMu[j][k]
-				self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
+				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
