@@ -513,6 +513,9 @@ class GMM1D(HMM):
 	def __init__(self,*args):
 		super(GMM1D,self).__init__(*args)
 		self.name='1D Gaussian Mixture Model'
+		N=self.N
+		self.sumGammaObsT=datatype.array(N)
+		self.sumGammaVarT=datatype.array(N)
 	def initB(self,codewords):
 		N=self.N
 		M=self.M
@@ -528,48 +531,19 @@ class GMM1D(HMM):
 		M=self.M
 		T=self.T
 		for j in xrange(N):
-			for k in xrange(M):
-				gammaObsSymbVk2=0
-				sumGamma2=0
-				gammaVar=0
-				for t in xrange(T):
-					gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
-					sumGamma2+=self.gamma[t][j]
-					gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
-#					if PREVENTDIVIDEBYZERO:
-#						if sumGamma==0:
-#							sumGamma=0.5
-#					print self._B[j].mu
-				self._B[j].mu=gammaObsSymbVk2/sumGamma2
-				self._B[j].sigmaSq=gammaVar/sumGamma2
-				if self._B[j].sigmaSq<MINVAR:
-					self._B[j].sigmaSq=MINVAR
-	def update(self,obs):
-		N=self.N
-		M=self.M
-		T=self.T
-		for t in xrange(T-1):
-			for k in xrange(N):
-				self.gamma[T-1][k]=self.alphaHat[T-1][k]*self.betaHat[T-1][k]/self.scalefactor[T-1]
-			for i in xrange(N):
-				sumXijHatJ=0
-				for j in xrange(N):
-					xijHat=self.alphaHat[t][i]*self.A[i][j]*self.B(j,obs[t+1])*self.betaHat[t+1][j]
-					self.xi[t][i][j]=xijHat
-					sumXijHatJ+=xijHat
-				self.gamma[t][i]=sumXijHatJ
-		for i in xrange(N):
-			self.pi[i]=self.gamma[0][i]
-		for i in xrange(N):
-			for j in xrange(N):
-				sumXi=0
-				sumGamma=0
-				for t in xrange(T-1):
-					sumXi+=self.xi[t][i][j]
-					sumGamma+=self.gamma[t][i]
-				#if PREVENTDIVIDEBYZERO:
-				if True:
-					if sumGamma==0:
-						sumGamma=0.5
-				self.A[i][j]=sumXi/sumGamma
-		self.updateB(obs)
+			gammaObsSymbVk2=0
+			sumGamma2=0
+			gammaVar=0
+			for t in xrange(T):
+				gammaObsSymbVk2+=self.gamma[t][j]*obs[t]
+				sumGamma2+=self.gamma[t][j]
+				gammaVar+=self.gamma[t][j]*(obs[t]-self._B[j].mu)**2
+			self.sumGammaT[j]+=sumGamma2
+			self.sumGammaObsT[j]+=gammaObsSymbVk2
+			self.sumGammaVarT[j]+=gammaVar
+			self._B[j].mu=self.sumGammaObsT[j]/self.sumGammaT[j]
+			self._B[j].sigmaSq=self.sumGammaVarT[j]/self.sumGammaT[j]
+			#self._B[j].mu=gammaObsSymbVk2/sumGamma2
+			#self._B[j].sigmaSq=gammaVar/sumGamma2
+			if self._B[j].sigmaSq<MINVAR:
+				self._B[j].sigmaSq=MINVAR
