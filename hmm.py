@@ -564,8 +564,7 @@ class GMM1D(HMM):
 		M=self.M
 		self._B=datatype.array(N)
 		for i in xrange(N):
-			#mu=codewords[i]+random.randint(0,500)/1000.0-0.25
-			mu=codewords[i]+0.1
+			mu=random.randint(0,4000)/1000.0-2.0
 			sigmaSq=1.0
 			self._B[i]=Gaussian(mu,sigmaSq)
 	def updateB(self,obs):
