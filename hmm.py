@@ -461,6 +461,25 @@ class GMM(HMM):
 		M=self.M
 		self.sumGamma2ObsT=datatype.matrix(N,M)
 		self.sumGamma2T=datatype.array(N)
+	def predict(self):
+		self.viterbi(self.obs)
+		T=self.T
+		M=self.M
+		tmp=self.delta[T-1][0]
+		maxArg=0
+		for i in xrange(1,self.N):
+			if self.delta[T-1][i]>tmp:
+				tmp=self.delta[T-1][i]
+				maxArg=i
+		state=maxArg
+		tmp=self.B(state,self.codewords[0])
+		maxArg=0
+		for i in xrange(1,M):
+			if self.B(state,self.codewords[i])>tmp:
+				tmp=self.B(state,self.codewords[i])
+				maxArg=i
+		confidence=self.probObsGivenModel
+		return self.codewords[maxArg],state,confidence
 	def initB(self,codewords):
 		N=self.N
 		M=self.M
@@ -516,6 +535,25 @@ class GMM1D(HMM):
 		N=self.N
 		self.sumGammaObsT=datatype.array(N)
 		self.sumGammaVarT=datatype.array(N)
+	def predict(self):
+		self.viterbi(self.obs)
+		T=self.T
+		M=self.M
+		tmp=self.delta[T-1][0]
+		maxArg=0
+		for i in xrange(1,self.N):
+			if self.delta[T-1][i]>tmp:
+				tmp=self.delta[T-1][i]
+				maxArg=i
+		state=maxArg
+		tmp=self.B(state,self.codewords[0])
+		maxArg=0
+		for i in xrange(1,M):
+			if self.B(state,self.codewords[i])>tmp:
+				tmp=self.B(state,self.codewords[i])
+				maxArg=i
+		confidence=self.probObsGivenModel
+		return self.codewords[maxArg],state,confidence
 	def initB(self,codewords):
 		N=self.N
 		M=self.M
