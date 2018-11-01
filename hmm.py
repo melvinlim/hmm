@@ -460,6 +460,7 @@ class GMM(HMM):
 		M=self.M
 		self.sumGamma2ObsT=datatype.matrix(N,M)
 		self.sumGamma2T=datatype.array(N)
+		self.sumGammaVarT=datatype.array(N)
 	def predict(self):
 		self.viterbi(self.obs)
 		T=self.T
@@ -515,6 +516,7 @@ class GMM(HMM):
 					sumGammatjT+=self.gamma[t][j]
 				self.sumGamma2ObsT[j][k]+=gammatjkdotobs
 				self.sumGamma2T[j]+=sumGammatjkT
+				self.sumGammaVarT[j]+=gammatjkdotsumSqDiff
 				#self._B[j].c[k]=(sumGammatjkT+BWEIGHT)/(sumGammatjT+self.M*BWEIGHT)
 				#self._B[j].gaussians[k].mu=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 				#self._B[j].gaussians[k].sigmaSq=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
@@ -522,15 +524,15 @@ class GMM(HMM):
 #				self.tMu[j][k]=(gammatjkdotobs+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 				self.tC[j][k]=(self.sumGamma2T[j]+BWEIGHT)/(self.sumGammaT[j]+self.M*BWEIGHT)
 				self.tMu[j][k]=(self.sumGamma2ObsT[j][k]+BWEIGHT)/(self.sumGamma2T[j]+self.M*BWEIGHT)
+				self.tSigmaSq[j][k]=(self.sumGammaVarT[j]+BWEIGHT)/(self.sumGamma2T[j]+self.M*BWEIGHT)
 				sumTCK+=self.tC[j][k]
 			for k in xrange(M):
 				self.tC[j][k]/=sumTCK
-				#self.tSigmaSq[j][k]=(gammatjkdotsumSqDiff+BWEIGHT)/(sumGammatjkT+self.M*BWEIGHT)
 		for j in xrange(N):
 			for k in xrange(M):
 				self._B[j].c[k]=self.tC[j][k]
 				self._B[j].gaussians[k].mu=self.tMu[j][k]
-				#self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
+				self._B[j].gaussians[k].sigmaSq=self.tSigmaSq[j][k]
 class GMM1D(HMM):
 	def __init__(self,*args):
 		super(GMM1D,self).__init__(*args)
@@ -586,5 +588,3 @@ class GMM1D(HMM):
 			self._B[j].sigmaSq=self.sumGammaVarT[j]/self.sumGammaT[j]
 			#self._B[j].mu=gammaObsSymbVk2/sumGamma2
 			#self._B[j].sigmaSq=gammaVar/sumGamma2
-			if self._B[j].sigmaSq<MINVAR:
-				self._B[j].sigmaSq=MINVAR
