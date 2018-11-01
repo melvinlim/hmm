@@ -549,6 +549,8 @@ class GMM1D(HMM):
 		M=self.M
 		T=self.T
 		for t in xrange(T-1):
+			for k in xrange(N):
+				self.gamma[T-1][k]=self.alphaHat[T-1][k]*self.betaHat[T-1][k]/self.scalefactor[T-1]
 			for i in xrange(N):
 				sumXijHatJ=0
 				for j in xrange(N):
