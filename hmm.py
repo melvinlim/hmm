@@ -130,8 +130,7 @@ class HMM(object):
 	def getExpState(self):
 		expState=datatype.array(self.N,0.0)
 		for j in xrange(self.N):
-			for t in xrange(self.T):
-				expState[j]+=self.gamma[t][j]
+			expState[j]=self.sumGammaT[j]
 			expState[j]/=self.observedSeq
 		return expState
 	def obsProb(self):
