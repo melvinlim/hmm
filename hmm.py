@@ -513,23 +513,6 @@ class GMM1D(HMM):
 	def __init__(self,*args):
 		super(GMM1D,self).__init__(*args)
 		self.name='1D Gaussian Mixture Model'
-	def predict(self):
-		T=self.T
-		M=self.M
-		tmp=self.delta[T-1][0]
-		maxArg=0
-		for i in xrange(1,self.N):
-			if self.delta[T-1][i]>tmp:
-				tmp=self.delta[T-1][i]
-				maxArg=i
-		state=maxArg
-		tmp=self.B(state,0)
-		maxArg=0
-		for i in xrange(1,M):
-			if self.B(state,i)>tmp:
-				tmp=self.B(state,i)
-				maxArg=i
-		return self.codewords[maxArg],state,1
 	def viterbi(self,obs):
 		for i in xrange(self.N):
 			self.delta[0][i]=self.pi[i]*self.B(i,obs[0])
