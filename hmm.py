@@ -498,6 +498,10 @@ class GMM(HMM):
 		T=self.T
 		for j in xrange(N):
 			sumTCK=0
+			sumGammaT=0
+			for t in xrange(T):
+				sumGammaT+=self.gamma[t][j]
+			self.sumGammaT[j]+=sumGammaT
 			for k in xrange(M):
 				sumGammatjT=0
 				sumGammatjkT=0
