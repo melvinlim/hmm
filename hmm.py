@@ -328,7 +328,7 @@ class HMM(object):
 		T=self.T
 		for t in xrange(T):
 			for k in xrange(N):
-				self.gamma[t][k]+=self.alphaHat[t][k]*self.betaHat[t][k]/self.scalefactor[t]
+				self.gamma[t][k]=self.alphaHat[t][k]*self.betaHat[t][k]/self.scalefactor[t]
 		for t in xrange(T-1):
 			for i in xrange(N):
 				sumXijJ=0
@@ -417,7 +417,7 @@ class HMMU(HMM):	#unscaled version of HMM.
 			return
 		for t in xrange(T):
 			for k in xrange(N):
-				self.gamma[t][k]+=self.alpha[t][k]*self.beta[t][k]/self.probObsGivenModel
+				self.gamma[t][k]=self.alpha[t][k]*self.beta[t][k]/self.probObsGivenModel
 		for t in xrange(T-1):
 			for i in xrange(N):
 				sumXijJ=0
