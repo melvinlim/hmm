@@ -563,8 +563,6 @@ class GMM1D(HMM):
 				self._B[j].sigmaSq=gammaVar/sumGamma2
 				if self._B[j].sigmaSq<MINVAR:
 					self._B[j].sigmaSq=MINVAR
-	def B(self,state,obs):
-		return self._B[state].value(obs)
 	def update(self,obs):
 		N=self.N
 		M=self.M
